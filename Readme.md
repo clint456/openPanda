@@ -93,6 +93,7 @@ openpanda/
 │   ├── architecture.md     # 架构设计
 │   ├── design.md           # 功能设计 + 数据库
 │   ├── build-and-deploy.md # 编译部署
+│   ├── data-safety.md      # 数据安全与备份
 │   ├── backend-api.md      # 后端 API 文档
 │   └── frontend-api.md     # 前端模块文档
 ├── docker-compose.yml          # 本地开发编排
@@ -109,6 +110,7 @@ openpanda/
 | 架构设计 | [docs/architecture.md](docs/architecture.md) |
 | 功能设计 + 数据库 | [docs/design.md](docs/design.md) |
 | 编译与部署 | [docs/build-and-deploy.md](docs/build-and-deploy.md) |
+| 数据安全与备份 | [docs/data-safety.md](docs/data-safety.md) |
 | 后端 API | [docs/backend-api.md](docs/backend-api.md) |
 | 前端 API 模块 | [docs/frontend-api.md](docs/frontend-api.md) |
 
@@ -136,14 +138,3 @@ openpanda/
 ## 📄 License
 
 MIT
-npm run docker:build:backend   # ①编译 → ②打包镜像
-npm run docker:build:frontend  # ①构建前端 → ②打包镜像
-npm run docker:build           # 前后端一起打包
-npm run docker:up              # docker-compose 一键启动全部服务
-npm run docker:down            # 停止全部服务
-npm run docker:logs            # 查看实时日志
-
-# ========== DockerHub ==========
-npm run docker:push            # 推送前后端镜像
-npm run docker:release         # 构建 + 推送一键完成
-```

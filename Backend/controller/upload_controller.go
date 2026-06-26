@@ -28,8 +28,8 @@ type UploadController struct {
 // NewUploadController 构造函数
 func NewUploadController() *UploadController {
 	return &UploadController{
-		UploadDir: "./uploads",                     // 存储目录
-		BaseURL:   "http://localhost:8080/uploads", // 访问URL（生产环境改为域名）
+		UploadDir: "./uploads", // 存储目录
+		BaseURL:   "/uploads",  // 相对路径，适配所有环境（Vite代理 / Nginx代理 / 直接访问）
 	}
 }
 

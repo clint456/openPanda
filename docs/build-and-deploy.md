@@ -103,24 +103,50 @@ npm run docker:release
 ### 第一次部署
 
 ```bash
-# 1. 将部署文件传到服务器
+# 1. 在服务器上创建持久化目录
+mkdir -p /data/openpanda/{pgdata,uploads,backups}
+
+# 2. 将部署文件传到服务器
 scp docker-compose.prod.yml user@server:/opt/openpanda/
 
-# 2. SSH 到服务器
+# 3. SSH 到服务器
 ssh user@server
 cd /opt/openpanda
 
-# 3. 启动
+# 4. 启动
 docker-compose -f docker-compose.prod.yml up -d
 ```
+
+> 所有数据存储在宿主机 `/data/openpanda/` 下，容器删除或软件更新都不会丢失。
 
 ### 更新部署
 
 ```bash
-# 本地推送新镜像后，服务器上：
 cd /opt/openpanda
-docker-compose -f docker-compose.prod.yml pull   # 拉最新
-docker-compose -f docker-compose.prod.yml up -d  # 重建
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 数据备份
+
+```bash
+# 备份数据库（推荐每日 crontab）
+docker exec openpanda-db pg_dump -U postgres openpanda \
+  > /data/openpanda/backups/backup-$(date +%Y%m%d).sql
+
+# 恢复数据库
+docker exec -i openpanda-db psql -U postgres openpanda \
+  < /data/openpanda/backups/backup-20260626.sql
+
+# 备份上传的图片（rsync 到远程或云存储）
+rsync -av /data/openpanda/uploads/ user@backup-server:/backups/openpanda-uploads/
+```
+
+### 定时备份（crontab）
+
+```bash
+# 每天凌晨 2 点自动备份数据库，保留最近 30 天
+0 2 * * * docker exec openpanda-db pg_dump -U postgres openpanda > /data/openpanda/backups/backup-$(date +\%Y\%m\%d).sql && find /data/openpanda/backups/ -name '*.sql' -mtime +30 -delete
 ```
 
 ### 端口说明

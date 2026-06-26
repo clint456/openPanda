@@ -72,6 +72,8 @@ services:
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ''
       JWT_SECRET: change-me-to-a-strong-secret-in-production
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -98,3 +100,4 @@ services:
 volumes:
   pg_data:
   redis_data:
+  uploads_data:

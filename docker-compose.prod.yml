@@ -1,8 +1,12 @@
 # ============================================================
-# docker-compose.prod.yml — 生产环境（拉取 DockerHub 镜像部署）
+# docker-compose.prod.yml — 生产环境
 #
-# 使用方式（服务器上）:
+# 服务器首次部署:
+#   mkdir -p /data/openpanda/{pgdata,uploads,backups}
 #   docker-compose -f docker-compose.prod.yml up -d
+#
+# 数据全部存储在宿主机 /data/openpanda/ 下，
+# 不受容器删除/重建/软件更新影响。
 # ============================================================
 version: '3.8'
 
@@ -18,7 +22,8 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - /data/openpanda/pgdata:/var/lib/postgresql/data
+      - /data/openpanda/backups:/backups
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
@@ -32,7 +37,7 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - redis_data:/data
+      - /data/openpanda/redis:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
@@ -58,6 +63,8 @@ services:
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ''
       JWT_SECRET: change-me-to-a-strong-secret-in-production
+    volumes:
+      - /data/openpanda/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,10 +76,8 @@ services:
     container_name: openpanda-frontend
     restart: always
     ports:
-      - '8888:80'
+      - '80:80'
     depends_on:
       - backend
 
-volumes:
-  pg_data:
-  redis_data:
+# 不使用命名卷 —— 全部 bind mount 到 /data/openpanda/
