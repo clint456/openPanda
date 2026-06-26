@@ -63,7 +63,7 @@ export default {
 
   // --- Footer ---
   footer: {
-    copyright: '© 2024 OpenPanda - Personal Tech Blog',
+    copyright: '© 2026 OpenPanda - Personal Tech Blog',
     poweredBy: 'Powered by Vue3 + Gin + PostgreSQL',
   },
 }

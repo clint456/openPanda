@@ -64,7 +64,7 @@ func LoadConfig() *Config {
 			Mode: getEnv("GIN_MODE", "debug"),
 		},
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "139.224.197.152"),
+			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     getEnv("DB_PORT", "5432"),
 			User:     getEnv("DB_USER", "postgres"),
 			Password: getEnv("DB_PASSWORD", "postgres"),
@@ -73,7 +73,7 @@ func LoadConfig() *Config {
 			TimeZone: getEnv("DB_TIMEZONE", "Asia/Shanghai"),
 		},
 		Redis: RedisConfig{
-			Addr:     getEnv("REDIS_ADDR", "139.224.197.152:6379"),
+			Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
 			Password: getEnv("REDIS_PASSWORD", ""),
 			DB:       0,
 		},

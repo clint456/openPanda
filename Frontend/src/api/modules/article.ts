@@ -108,3 +108,26 @@ export function deleteArticle(id: number) {
 export function getCategories() {
   return http.get<ApiResponse<Category[]>>('/categories')
 }
+
+/** 分类表单数据 */
+export interface CategoryFormData {
+  name: string
+  slug: string
+  description?: string
+  sort_order?: number
+}
+
+/** 创建分类 */
+export function createCategory(data: CategoryFormData) {
+  return http.post<ApiResponse<Category>>('/admin/categories', data)
+}
+
+/** 更新分类 */
+export function updateCategory(id: number, data: Partial<CategoryFormData>) {
+  return http.put<ApiResponse<Category>>(`/admin/categories/${id}`, data)
+}
+
+/** 删除分类 */
+export function deleteCategory(id: number) {
+  return http.delete<ApiResponse<null>>(`/admin/categories/${id}`)
+}

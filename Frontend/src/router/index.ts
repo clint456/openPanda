@@ -38,21 +38,37 @@ const routes: RouteRecordRaw[] = [
     path: '/articles/new',       // 新建文章（必须放在 /:id 之前）
     name: 'ArticleCreate',
     component: () => import('@/views/Article/Editor.vue'),
-    meta: { title: '撰写文章' },
+    meta: { title: '撰写文章', requiresAuth: true },
   },
   {
-    path: '/articles/:id/edit',  // 编辑文章（必须放在 /:id 之前）
+    path: '/articles/:id/edit',
     name: 'ArticleEdit',
     component: () => import('@/views/Article/Editor.vue'),
-    meta: { title: '编辑文章' },
+    meta: { title: '编辑文章', requiresAuth: true },
   },
   {
-    path: '/articles/:id',  // :id 是动态路由参数
+    path: '/articles/:id',
     name: 'ArticleDetail',
     component: () => import('@/views/Article/Detail.vue'),
     meta: { title: '文章详情' },
   },
-  // 后续拓展示例：
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login/index.vue'),
+    meta: { title: '登录' },
+  },
+  {
+    path: '/category/:slug',  // 分类文章列表
+    name: 'CategoryArticles',
+    component: () => import('@/views/Category/index.vue'),
+    meta: { title: '技术专栏' },
+  },  {
+    path: '/admin/categories',
+    name: 'CategoryManage',
+    component: () => import('@/views/Category/Manage.vue'),
+    meta: { title: '专栏管理', requiresAuth: true },
+  },  // 后续拓展示例：
   // {
   //   path: '/categories/:slug',
   //   name: 'CategoryArticles',
@@ -100,15 +116,25 @@ router.beforeEach((to, _from, next) => {
     document.title = `${title} - OpenPanda`
   }
 
-  // --- 后续可在此添加登录验证 ---
-  // const token = localStorage.getItem('token')
-  // if (to.meta.requiresAuth && !token) {
-  //   // 需要登录但未登录，跳转登录页
-  //   next('/login')
-  //   return
-  // }
+  // --- 登录验证：需要登录的页面检查 Token ---
+  if (to.meta.requiresAuth) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      // 未登录，跳转登录页，登录后回跳
+      next({ path: '/login', query: { redirect: to.fullPath } })
+      return
+    }
+  }
 
-  // next() 必须调用，否则路由不会生效
+  // --- 已登录则不允许再访问登录页 ---
+  if (to.name === 'Login') {
+    const token = localStorage.getItem('token')
+    if (token) {
+      next('/')
+      return
+    }
+  }
+
   next()
 })
 

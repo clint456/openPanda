@@ -30,6 +30,9 @@ export const useAppStore = defineStore('app', () => {
   /** 侧边栏是否展开（移动端适配用） */
   const sidebarOpen = ref<boolean>(false)
 
+  /** 夜间模式 */
+  const isDark = ref<boolean>(localStorage.getItem('theme') === 'dark')
+
   // ============================================================
   // Getters（计算属性）
   // computed() 创建派生数据，依赖变化时自动更新
@@ -60,16 +63,30 @@ export const useAppStore = defineStore('app', () => {
     sidebarOpen.value = !sidebarOpen.value
   }
 
-  // 返回需要暴露给外部使用的 state/getters/actions
+  /** 切换夜间模式 */
+  function toggleDark(): void {
+    isDark.value = !isDark.value
+    const theme = isDark.value ? 'dark' : 'light'
+    localStorage.setItem('theme', theme)
+    document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : '')
+  }
+
+  /** 初始化夜间模式（应用启动时调用） */
+  function initTheme(): void {
+    if (isDark.value) {
+      document.documentElement.setAttribute('data-theme', 'dark')
+    }
+  }
+
   return {
-    // state
     locale,
     sidebarOpen,
-    // getters
+    isDark,
     isZhCN,
     isEnUS,
-    // actions
     setLocale,
     toggleSidebar,
+    toggleDark,
+    initTheme,
   }
 })

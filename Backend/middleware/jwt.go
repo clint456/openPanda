@@ -103,5 +103,3 @@ func GetCurrentUserID(c *gin.Context) (uint, bool) {
 	id, ok := userID.(uint)
 	return id, ok
 }
-
-

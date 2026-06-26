@@ -81,18 +81,18 @@ body {
     'Hiragino Sans GB',
     'Microsoft YaHei',
     sans-serif;
-  -webkit-font-smoothing: antialiased;   /* 字体抗锯齿（Mac） */
-  -moz-osx-font-smoothing: grayscale;    /* 字体抗锯齿（Firefox Mac） */
-  color: #333;
-  background-color: #f5f7fa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #232323;
+  background-color: #faf7f3;
 }
 
 /* 链接默认样式 */
 a {
-  color: #409eff;
+  color: #c8754a;
   text-decoration: none;
 }
 a:hover {
-  color: #66b1ff;
+  color: #a85d36;
 }
 </style>

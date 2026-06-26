@@ -11,6 +11,7 @@
       Logo + 标题
       ============================================================ -->
       <router-link to="/" class="header__logo">
+        <!-- <img src="/panda.png" alt="OpenPanda" class="logo__img" /> -->
         <span class="logo__text">OpenPanda</span>
       </router-link>
 
@@ -34,9 +35,33 @@
       右侧操作区：语言切换 + 移动端菜单按钮
       ============================================================ -->
       <div class="header__actions">
-        <!-- 写文章按钮 -->
-        <el-button type="primary" size="small" :icon="EditIcon" @click="goToEditor">
+        <!-- 写文章按钮（仅登录后显示） -->
+        <el-button
+          v-if="authStore.isLoggedIn"
+          type="primary"
+          size="small"
+          :icon="EditIcon"
+          @click="goToEditor"
+        >
           {{ $t('nav.writeArticle') }}
+        </el-button>
+
+        <!-- 专栏管理（仅登录后显示） -->
+        <el-button
+          v-if="authStore.isLoggedIn"
+          size="small"
+          @click="router.push('/admin/categories')"
+        >
+          专栏管理
+        </el-button>
+
+        <!-- 登录/用户区 -->
+        <template v-if="authStore.isLoggedIn">
+          <span class="header__username">{{ authStore.username }}</span>
+          <el-button text size="small" @click="handleLogout">登出</el-button>
+        </template>
+        <el-button v-else text size="small" @click="router.push('/login')">
+          登录
         </el-button>
 
         <!-- 语言切换按钮 -->
@@ -46,6 +71,14 @@
           inactive-text="EN"
           inline-prompt
           @change="handleLocaleChange"
+        />
+
+        <!-- 夜间模式切换 -->
+        <el-button
+          text
+          :icon="appStore.isDark ? SunnyIcon : MoonIcon"
+          @click="appStore.toggleDark()"
+          title="夜间模式"
         />
 
         <!-- 移动端菜单按钮（桌面端隐藏） -->
@@ -71,7 +104,8 @@
 import { ref, computed } from 'vue'           // Vue3 响应式 API
 import { useRoute, useRouter } from 'vue-router'         // 获取当前路由信息
 import { useAppStore } from '@/stores/app'    // 全局状态
-import { Menu as MenuIcon, Edit as EditIcon } from '@element-plus/icons-vue' // Element Plus 图标
+import { useAuthStore } from '@/stores/auth'  // 认证状态
+import { Menu as MenuIcon, Edit as EditIcon, Sunny as SunnyIcon, Moon as MoonIcon } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'            // 国际化 hook
 
 // ============================================================
@@ -80,6 +114,7 @@ import { useI18n } from 'vue-i18n'            // 国际化 hook
 const route = useRoute()           // 当前路由对象
 const router = useRouter()       // 编程式导航
 const appStore = useAppStore()     // Pinia store
+const authStore = useAuthStore()   // 认证 store
 const { locale } = useI18n()       // i18n 实例（解构出 locale）
 
 // isZhCN: 是否中文模式（绑定到 el-switch）
@@ -113,15 +148,21 @@ function handleLocaleChange(value: string | number | boolean): void {
 function goToEditor(): void {
   router.push('/articles/new')
 }
+
+/** 登出 */
+function handleLogout(): void {
+  authStore.logout()
+  router.push('/')
+}
 </script>
 
 <style scoped>
 .header {
   background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); /* 底部阴影 */
-  position: sticky;  /* 粘性定位：滚动时固定在顶部 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  position: sticky;
   top: 0;
-  z-index: 100;      /* 层级，保证在其他元素之上 */
+  z-index: 100;
 }
 
 .header__container {
@@ -133,43 +174,42 @@ function goToEditor(): void {
   height: 60px;
 }
 
-/* Logo */
 .header__logo {
   display: flex;
   align-items: center;
   margin-right: 30px;
+  gap: 8px;
+}
+.logo__img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
 }
 .logo__text {
   font-size: 22px;
   font-weight: bold;
-  color: #409eff;
+  color: #c8754a;
 }
 
-/* 导航菜单 */
 .header__menu {
-  flex: 1;       /* 占满剩余空间 */
-  border-bottom: none !important; /* 去掉 Element Plus 默认的底部边框 */
+  flex: 1;
 }
 
-/* 右侧操作区 */
 .header__actions {
   display: flex;
   align-items: center;
-  gap: 12px;     /* 子元素间距（CSS Grid/Flexbox gap 属性） */
+  gap: 12px;
+}
+.header__username {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
 }
 
-/* 移动端菜单按钮（默认隐藏，小屏幕显示） */
-.header__mobile-btn {
-  display: none;
-}
+.header__mobile-btn { display: none; }
 
-/* 响应式：屏幕宽度 ≤ 768px 时（手机端） */
 @media (max-width: 768px) {
-  .header__menu {
-    display: none;  /* 隐藏导航菜单 */
-  }
-  .header__mobile-btn {
-    display: inline-flex; /* 显示菜单按钮 */
-  }
+  .header__menu { display: none; }
+  .header__mobile-btn { display: inline-flex; }
 }
 </style>

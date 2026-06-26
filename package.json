@@ -1,0 +1,23 @@
+{
+  "name": "openpanda",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OpenPanda - 个人技术交流平台 (ViteTS + Gin + PostgreSQL + Redis)",
+  "scripts": {
+    "dev:frontend": "cd Frontend && npm run dev",
+    "dev:backend": "npm run build:backend:local && cd Backend && server.exe",
+    "build:frontend": "cd Frontend && npm run build",
+    "build:backend": "cd Backend && set CGO_ENABLED=0&& set GOOS=linux&& set GOARCH=amd64&& go build -ldflags=\"-w -s\" -o server main.go",
+    "build:backend:local": "cd Backend && go build -ldflags=\"-w -s\" -o server.exe main.go",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build:backend": "npm run build:backend && docker build -t clintonluo/openpanda-backend:latest ./Backend",
+    "docker:build:frontend": "npm run build:frontend && docker build -t clintonluo/openpanda-frontend:latest ./Frontend",
+    "docker:build": "npm run docker:build:backend && npm run docker:build:frontend",
+    "docker:push:backend": "docker push clintonluo/openpanda-backend:latest",
+    "docker:push:frontend": "docker push clintonluo/openpanda-frontend:latest",
+    "docker:push": "npm run docker:push:backend && npm run docker:push:frontend",
+    "docker:release": "npm run docker:build && npm run docker:push"
+  }
+}

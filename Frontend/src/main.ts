@@ -35,6 +35,16 @@ app.use(i18n)             // 国际化
 app.use(ElementPlus)      // UI 组件库
 
 // ============================================================
+// 2.5 初始化认证状态（从 localStorage 恢复登录态，验证 Token）
+// ============================================================
+import { useAuthStore } from '@/stores/auth'
+import { useAppStore } from '@/stores/app'
+const authStore = useAuthStore()
+authStore.initAuth()
+const appStore = useAppStore()
+appStore.initTheme()      // 初始化夜间模式（从 localStorage 恢复）
+
+// ============================================================
 // 3. 挂载到 HTML 中的 #app 元素（index.html 中的 <div id="app">）
 //    挂载后，Vue 会接管此元素内的所有内容
 // ============================================================

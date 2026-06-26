@@ -12,10 +12,25 @@
 
     <!-- 文章内容 -->
     <template v-else-if="article">
-      <!-- 返回按钮 -->
-      <el-button text :icon="ArrowLeftIcon" @click="router.back()">
-        {{ $t('article.backToList') }}
-      </el-button>
+      <!-- 返回按钮 + 操作按钮 -->
+      <div class="article__actions">
+        <el-button text :icon="ArrowLeftIcon" @click="router.back()">
+          {{ $t('article.backToList') }}
+        </el-button>
+        <div v-if="authStore.isLoggedIn" class="article__admin-actions">
+          <el-button text type="primary" :icon="EditIcon" @click="goEdit">
+            编辑
+          </el-button>
+          <el-popconfirm
+            title="确定删除这篇文章？"
+            @confirm="handleDelete"
+          >
+            <template #reference>
+              <el-button text type="danger" :icon="DeleteIcon">删除</el-button>
+            </template>
+          </el-popconfirm>
+        </div>
+      </div>
 
       <!-- 文章头部信息 -->
       <div class="article__header">
@@ -44,9 +59,8 @@
         <img :src="article.cover_image" :alt="article.title" />
       </div>
 
-      <!-- 文章正文（渲染富文本HTML） -->
-      <!-- v-html: 将字符串作为 HTML 渲染（需确保内容安全） -->
-      <div class="article__body" v-html="article.content" />
+      <!-- 文章正文（Markdown → HTML 渲染） -->
+      <div class="article__body" v-html="renderedContent" />
 
       <!-- 底部操作 -->
       <div class="article__footer">
@@ -61,20 +75,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft as ArrowLeftIcon } from '@element-plus/icons-vue'
-import { getArticleById } from '@/api/modules/article'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft as ArrowLeftIcon, Edit as EditIcon, Delete as DeleteIcon } from '@element-plus/icons-vue'
+import { getArticleById, deleteArticle } from '@/api/modules/article'
+import { useAuthStore } from '@/stores/auth'
+import { marked } from 'marked'       // Markdown 解析器
 import type { Article } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 // ============================================================
 // 响应式数据
 // ============================================================
-const article = ref<Article | null>(null) // Article | null 联合类型：要么是 Article，要么是 null
+const article = ref<Article | null>(null)
 const loading = ref<boolean>(true)
+
+/** 将 Markdown 内容转换为 HTML（用于 v-html 渲染） */
+const renderedContent = computed<string>(() => {
+  if (!article.value?.content) return ''
+  return marked.parse(article.value.content) as string
+})
 
 // ============================================================
 // 生命周期
@@ -119,6 +143,23 @@ function formatDate(dateStr: string): string {
     day: 'numeric',
   })
 }
+
+/** 跳转到编辑页 */
+function goEdit(): void {
+  router.push(`/articles/${article.value?.id}/edit`)
+}
+
+/** 删除文章 */
+async function handleDelete(): Promise<void> {
+  if (!article.value) return
+  try {
+    await deleteArticle(article.value.id)
+    ElMessage.success('文章已删除')
+    router.push('/articles')
+  } catch {
+    ElMessage.error('删除失败')
+  }
+}
 </script>
 
 <style scoped>
@@ -129,6 +170,17 @@ function formatDate(dateStr: string): string {
 
 .loading {
   padding: 40px 0;
+}
+
+.article__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.article__admin-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .article__header {
@@ -188,7 +240,7 @@ function formatDate(dateStr: string): string {
   font-size: 14px;
 }
 .article__body :deep(blockquote) {
-  border-left: 4px solid #409eff;
+  border-left: 4px solid #c8754a;
   padding-left: 16px;
   color: #666;
   margin: 16px 0;

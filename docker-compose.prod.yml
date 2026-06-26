@@ -1,0 +1,78 @@
+# ============================================================
+# docker-compose.prod.yml — 生产环境（拉取 DockerHub 镜像部署）
+#
+# 使用方式（服务器上）:
+#   docker-compose -f docker-compose.prod.yml up -d
+# ============================================================
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: openpanda-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: openpanda
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: openpanda-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: clintonluo/openpanda-backend:latest
+    container_name: openpanda-backend
+    restart: always
+    ports:
+      - '8080:8080'
+    environment:
+      SERVER_PORT: '8080'
+      GIN_MODE: release
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: openpanda
+      DB_SSLMODE: disable
+      DB_TIMEZONE: Asia/Shanghai
+      REDIS_ADDR: redis:6379
+      REDIS_PASSWORD: ''
+      JWT_SECRET: change-me-to-a-strong-secret-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    image: clintonluo/openpanda-frontend:latest
+    container_name: openpanda-frontend
+    restart: always
+    ports:
+      - '8888:80'
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
+  redis_data:

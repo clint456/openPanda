@@ -1,27 +1,147 @@
 /* ============================================================
-   文件: styles/index.css
-   说明: 全局自定义样式
-         补充 Element Plus 默认样式之外的全局设置
+   全局样式 — 暖橙主调 + 鼠尾绿 + 灰蓝，高雅舒适
+   字体全黑高对比度，背景暖奶油色
    ============================================================ */
 
-/* --- 全局 CSS 变量 --- */
 :root {
-  --color-primary: #409eff;
-  --color-success: #67c23a;
-  --color-warning: #e6a23c;
-  --color-danger: #f56c6c;
-  --color-info: #909399;
+  /* 暖橙主调（琥珀/陶土色，高雅不过亮） */
+  --color-primary: #c8754a;
+  --color-primary-light: #d4946e;
+  --color-primary-dark: #a85d36;
+
+  /* 鼠尾绿（自然优雅） */
+  --color-success: #6b9b6e;
+  --color-success-light: #89b38b;
+
+  /* 金盏黄 */
+  --color-warning: #d4a24e;
+
+  /* 保留红色警告 */
+  --color-danger: #e05555;
+
+  /* 灰蓝（沉稳冷静） */
+  --color-info: #6a8fa8;
+
+  /* 背景与边框 */
+  --bg-page: #faf7f3;
+  --bg-white: #ffffff;
+  --border-color: #e5ded6;
+
+  /* 文字颜色 — 全黑高对比度 */
+  --text-primary: #232323;
+  --text-secondary: #3a3a3a;
+  --text-muted: #555555;
 }
 
-/* --- 滚动条美化 --- */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  line-height: 1.7;
 }
-::-webkit-scrollbar-thumb {
-  background-color: #c0c4cc;
-  border-radius: 4px;
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-primary-dark); }
+
+/* Element Plus 覆盖 */
+.el-menu--horizontal { border-bottom: none !important; }
+.el-button--primary {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
 }
-::-webkit-scrollbar-track {
-  background-color: #f5f7fa;
+.el-button--primary:hover {
+  background: var(--color-primary-dark) !important;
+}
+.el-tag--primary {
+  background: #fdf2ea !important;
+  border-color: var(--color-primary-light) !important;
+  color: var(--color-primary-dark) !important;
+}
+.el-pagination .el-pager li.is-active {
+  background: var(--color-primary) !important;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #d5cbc0; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Element Plus 开关/菜单 颜色统一 */
+.el-switch.is-checked .el-switch__core {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+.el-menu-item.is-active {
+  color: var(--color-primary) !important;
+}
+
+/* ============================================================
+   夜间模式
+   标签页 <html data-theme="dark"> 时自动切换
+   ============================================================ */
+[data-theme='dark'] {
+  --color-primary: #e0956e;
+  --color-primary-light: #e8ac8d;
+  --color-primary-dark: #c8754a;
+  --color-success: #7dab7f;
+  --color-warning: #dbb568;
+  --color-danger: #e07070;
+  --color-info: #7a9db3;
+  --bg-page: #1e1e24;
+  --bg-white: #2a2a32;
+  --border-color: #3d3d48;
+  --text-primary: #e8e0d8;
+  --text-secondary: #c5bbb0;
+  --text-muted: #9e9489;
+}
+
+[data-theme='dark'] body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .el-card {
+  background: var(--bg-white) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme='dark'] .header {
+  background: #24242c;
+  border-bottom-color: #3d3d48;
+}
+
+[data-theme='dark'] .el-menu--horizontal {
+  background: #24242c !important;
+}
+[data-theme='dark'] .el-menu-item {
+  color: var(--text-secondary) !important;
+}
+[data-theme='dark'] .el-menu-item.is-active {
+  color: var(--color-primary) !important;
+}
+[data-theme='dark'] .el-menu-item:hover {
+  background: #33333d !important;
+}
+
+[data-theme='dark'] .el-input__wrapper {
+  background: #33333d !important;
+  box-shadow: 0 0 0 1px var(--border-color) inset !important;
+}
+[data-theme='dark'] .el-input__inner {
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .el-dialog {
+  background: var(--bg-white) !important;
+}
+[data-theme='dark'] .el-table {
+  --el-table-bg-color: var(--bg-white);
+  --el-table-tr-bg-color: var(--bg-white);
+}
+[data-theme='dark'] .el-table th.el-table__cell {
+  background: #2a2a32;
 }

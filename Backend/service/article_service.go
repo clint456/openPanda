@@ -173,3 +173,27 @@ func (s *CategoryService) GetAll() ([]model.Category, error) {
 	}
 	return categories, nil
 }
+
+// GetBySlug 根据 slug 获取分类
+func (s *CategoryService) GetBySlug(slug string) (*model.Category, error) {
+	var category model.Category
+	if err := s.DB.Where("slug = ?", slug).First(&category).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
+// Create 创建分类
+func (s *CategoryService) Create(category *model.Category) error {
+	return s.DB.Create(category).Error
+}
+
+// Update 更新分类
+func (s *CategoryService) Update(category *model.Category) error {
+	return s.DB.Save(category).Error
+}
+
+// Delete 删除分类
+func (s *CategoryService) Delete(id uint) error {
+	return s.DB.Delete(&model.Category{}, id).Error
+}

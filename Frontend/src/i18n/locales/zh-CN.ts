@@ -33,7 +33,7 @@ export default {
 
   // --- 首页 ---
   homePage: {
-    title: 'OpenPanda',
+    title: '开源熊猫',
     subtitle: '嵌入式与硬件开发技术交流平台',
     description: '专注嵌入式Linux、硬件电路设计、单片机开发领域的技术分享与经验沉淀',
     hotArticles: '热门文章',
@@ -65,7 +65,7 @@ export default {
 
   // --- 页脚 ---
   footer: {
-    copyright: '© 2024 OpenPanda - 个人技术交流平台',
+    copyright: '© 2026 开源熊猫 - 嵌入式技术交流平台',
     poweredBy: 'Powered by Vue3 + Gin + PostgreSQL',
   },
 }

@@ -44,17 +44,26 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 
 	// ============================================================
 	// 依赖注入：创建 Service 和 Controller 实例
-	// 拓展时在此处初始化新的 Service 和 Controller
 	// ============================================================
 	articleService := service.NewArticleService(db)
 	categoryService := service.NewCategoryService(db)
 	articleController := controller.NewArticleController(articleService, categoryService)
+	authController := controller.NewAuthController()
+	uploadController := controller.NewUploadController()
+
+	// ============================================================
+	// 静态文件服务（上传的图片通过此路由访问）
+	// ============================================================
+	r.Static("/uploads", "./uploads")
 
 	// ============================================================
 	// API v1 路由组（公开接口，无需认证）
 	// ============================================================
 	v1 := r.Group("/api/v1")
 	{
+		// --- 认证相关（公开） ---
+		v1.POST("/login", authController.Login) // 登录
+
 		// --- 文章相关 ---
 		v1.GET("/articles", articleController.GetArticleList)        // 文章列表
 		v1.GET("/articles/hot", articleController.GetHotArticles)    // 热门文章（注意：/hot 必须在 /:id 之前注册，否则会被 :id 匹配）
@@ -70,19 +79,32 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 	}
 
 	// ============================================================
-	// Admin 路由组（需JWT认证）
+	// Admin 路由组（需 JWT 认证）
 	// ============================================================
 	admin := r.Group("/api/v1/admin")
-	admin.Use(middleware.JWTAuthMiddleware()) // 此组下所有路由都需要认证
+	admin.Use(middleware.JWTAuthMiddleware())
 	{
 		// --- 文章管理 ---
-		admin.POST("/articles", articleController.CreateArticle)       // 创建文章
-		admin.PUT("/articles/:id", articleController.UpdateArticle)    // 更新文章
-		admin.DELETE("/articles/:id", articleController.DeleteArticle) // 删除文章
+		admin.POST("/articles", articleController.CreateArticle)
+		admin.PUT("/articles/:id", articleController.UpdateArticle)
+		admin.DELETE("/articles/:id", articleController.DeleteArticle)
 
-		// 后续拓展示例：
-		// admin.GET("/articles", articleController.GetMyArticles)  // 我的文章列表
-		// admin.GET("/dashboard", dashboardController.GetStats)    // 后台统计数据
+		// --- 图片上传 ---
+		admin.POST("/upload/image", uploadController.UploadImage)
+
+		// --- 分类管理 ---
+		admin.POST("/categories", articleController.CreateCategory)
+		admin.PUT("/categories/:id", articleController.UpdateCategory)
+		admin.DELETE("/categories/:id", articleController.DeleteCategory)
+	}
+
+	// ============================================================
+	// 认证路由组（需 JWT 认证，用于验证 Token 有效性等）
+	// ============================================================
+	auth := r.Group("/api/v1/auth")
+	auth.Use(middleware.JWTAuthMiddleware())
+	{
+		auth.GET("/me", authController.GetMe) // 获取当前用户信息
 	}
 
 	// ============================================================

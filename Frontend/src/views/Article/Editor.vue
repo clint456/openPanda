@@ -75,8 +75,9 @@
             :language="editorLang"
             :toolbars="toolbars"
             :preview-theme="'github'"
+            :on-upload-img="handleUploadImage"
             style="height: 500px"
-            placeholder="开始撰写你的技术文章...&#10;&#10;支持 Markdown 语法：&#10;- # 标题&#10;- **加粗**&#10;- `代码`&#10;- ```代码块```&#10;- ![图片](url)"
+            placeholder="开始撰写你的技术文章...&#10;&#10;支持 Markdown 语法：&#10;- # 标题&#10;- **加粗**&#10;- `代码`&#10;- ```代码块```&#10;- 粘贴或拖入图片自动上传"
           />
         </div>
       </el-form-item>
@@ -104,6 +105,7 @@ import type { ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 
 import { getCategories, createArticle, updateArticle, getArticleById } from '@/api/modules/article'
+import { uploadImage } from '@/api/modules/upload'
 import { useAppStore } from '@/stores/app'
 import type { Category, ArticleFormData } from '@/types'
 
@@ -260,6 +262,28 @@ async function handleSaveDraft(): Promise<void> {
   } finally {
     submitting.value = false
   }
+}
+
+/**
+ * 图片上传处理器（md-editor-v3 的 onUploadImg 回调）
+ * 粘贴/拖入图片时自动调用，上传到服务器并返回 Markdown 图片语法
+ */
+async function handleUploadImage(
+  files: File[],
+  callback: (urls: string[]) => void
+): Promise<void> {
+  const urls: string[] = []
+  for (const file of files) {
+    try {
+      const { data } = await uploadImage(file)
+      if (data.data?.url) {
+        urls.push(data.data.url)
+      }
+    } catch {
+      ElMessage.error(`图片 ${file.name} 上传失败`)
+    }
+  }
+  callback(urls)
 }
 </script>
 

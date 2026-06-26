@@ -64,16 +64,15 @@ import AppHeader from '@/components/AppHeader.vue'
 }
 
 .layout__footer {
-  background-color: #2c3e50;
-  color: #ecf0f1;
+  background-color: #3d322a;
+  color: #e8ddd2;
   text-align: center;
   padding: 20px 0;
   font-size: 14px;
 }
-
 .footer__powered {
   margin-top: 8px;
-  color: #95a5a6;
+  color: #b5a594;
   font-size: 12px;
 }
 </style>
