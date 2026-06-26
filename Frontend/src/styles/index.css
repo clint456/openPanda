@@ -1,0 +1,27 @@
+/* ============================================================
+   文件: styles/index.css
+   说明: 全局自定义样式
+         补充 Element Plus 默认样式之外的全局设置
+   ============================================================ */
+
+/* --- 全局 CSS 变量 --- */
+:root {
+  --color-primary: #409eff;
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+  --color-info: #909399;
+}
+
+/* --- 滚动条美化 --- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c0c4cc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background-color: #f5f7fa;
+}

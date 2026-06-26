@@ -1,0 +1,60 @@
+// ============================================================
+// tsconfig.json - TypeScript 编译器配置文件
+// 说明：控制 TypeScript 如何编译代码
+// 关键词解释：
+//   strict: true → 严格模式，禁止 any，必须声明类型
+//   paths: 路径别名，用 @/ 代替 ../../src/ 这种长路径
+//   include: 哪些文件需要编译
+// ============================================================
+{
+  "compilerOptions": {
+    // --- 目标JS版本 ---
+    // ESNext: 编译到最新ES标准，由 Vite 负责最终兼容处理
+    "target": "ESNext",
+    // module: 模块系统，ESNext 支持 import/export
+    "module": "ESNext",
+    // moduleResolution: 模块解析策略，bundler 适合 Vite/Webpack
+    "moduleResolution": "bundler",
+
+    // --- 严格类型检查（核心要求） ---
+    // strict: true 开启所有严格检查，禁止隐含 any
+    "strict": true,
+    // noUnusedLocals: 未使用的局部变量报错
+    "noUnusedLocals": true,
+    // noUnusedParameters: 未使用的函数参数报错
+    "noUnusedParameters": true,
+
+    // --- JSX/TSX ---
+    // jsx: preserve 保留 JSX，由 Vue 编译器处理
+    "jsx": "preserve",
+
+    // --- 路径别名 ---
+    // baseUrl: 基础路径（paths 需要 baseUrl）
+    "baseUrl": ".",
+    // paths: 路径映射，@/ 映射到 src/
+    // 使用示例：import { Article } from '@/types'
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    // --- 其他 ---
+    // resolveJsonModule: 允许 import JSON 文件
+    "resolveJsonModule": true,
+    // esModuleInterop: 兼容 CommonJS 模块的默认导入
+    "esModuleInterop": true,
+    // skipLibCheck: 跳过 .d.ts 文件的类型检查（加速编译）
+    "skipLibCheck": true
+  },
+  // include: 编译包含的文件
+  "include": [
+    "src/**/*.ts",       // 所有 TS 文件
+    "src/**/*.d.ts",     // 所有类型声明文件
+    "src/**/*.tsx",      // 所有 TSX 文件
+    "src/**/*.vue",      // 所有 Vue 文件
+    "env.d.ts"           // 环境变量类型声明
+  ],
+  // exclude: 排除不需要编译的文件
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

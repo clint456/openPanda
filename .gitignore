@@ -1,0 +1,48 @@
+# ============================================================
+# .gitignore - 排除不应提交到 Git 的文件
+# 涵盖: Go / Node.js / Vite / IDE / OS / Docker 等
+# ============================================================
+
+# ==========================
+# Node.js / Frontend
+# ==========================
+node_modules/
+Frontend/dist/
+Frontend/.env.local
+Frontend/.env.*.local
+
+# ==========================
+# Go / Backend
+# ==========================
+Backend/server          # 编译产物
+Backend/tmp/
+*.exe
+*.test
+
+# ==========================
+# IDE / Editor
+# ==========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ==========================
+# OS
+# ==========================
+Desktop.ini
+
+# ==========================
+# Environment
+# ==========================
+.env.local
+.env.*.local
+*.log
+
+# ==========================
+# Docker
+# ==========================
+docker-compose.override.yml
