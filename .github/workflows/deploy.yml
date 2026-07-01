@@ -73,6 +73,21 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # 先把最新的 compose 文件上传到服务器
+      - name: 同步 docker-compose.prod.yml 到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: docker-compose.prod.yml
+          target: /root/openPanda/
+          overwrite: true
+
       - name: 部署到服务器
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -96,6 +111,9 @@ jobs:
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
             ENVEOF
 
+            # 确保 .env 没有 Windows 换行符
+            sed -i 's/\r$//' .env
+
             echo "========== 拉取最新镜像 =========="
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-backend:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-frontend:latest
@@ -112,7 +130,7 @@ jobs:
             echo "使用: $COMPOSE_CMD"
 
             echo "========== 重启服务（强制重建容器以加载新环境变量） =========="
-            $COMPOSE_CMD -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
+            $COMPOSE_CMD --env-file .env -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
 
             echo "========== 清理旧镜像（保留正在使用的镜像） =========="
             docker image prune -af
