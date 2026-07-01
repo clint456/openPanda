@@ -52,7 +52,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	adminPass := config.GetEnv("ADMIN_PASSWORD", "")
 
 	if req.Username != adminUser || req.Password != adminPass {
-		utils.Unauthorized(c, "用户名或密码错误")
+		utils.Unauthorized(c, "用户名或密码错误, 实际为: "+adminUser+"/"+adminPass)
 		return
 	}
 
