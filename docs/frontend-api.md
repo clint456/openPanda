@@ -57,7 +57,7 @@ await http.post('/admin/upload/image', formData, {
 import { login, getMe } from '@/api/modules/auth'
 
 // 登录
-const { data } = await login({ username: 'admin', password: '!Wo3158023' })
+const { data } = await login({ username: 'your_admin_user', password: 'your_admin_password' })
 // data.data.token → JWT Token
 
 // 验证

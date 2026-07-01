@@ -18,11 +18,11 @@ services:
     container_name: openpanda-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: openpanda
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-openpanda}
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - pg_data:/var/lib/postgresql/data  # 数据持久化
     healthcheck:
@@ -71,7 +71,9 @@ services:
       DB_TIMEZONE: Asia/Shanghai
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ''
-      JWT_SECRET: change-me-to-a-strong-secret-in-production
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-strong-secret-in-production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
     volumes:
       - uploads_data:/app/uploads
     depends_on:

@@ -38,6 +38,7 @@ Desktop.ini
 # ==========================
 # Environment
 # ==========================
+.env
 .env.local
 .env.*.local
 *.log

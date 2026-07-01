@@ -153,10 +153,84 @@ rsync -av /data/openpanda/uploads/ user@backup-server:/backups/openpanda-uploads
 
 | 服务 | 端口 | 用途 |
 |------|------|------|
-| Nginx (Frontend) | 80 | 用户访问入口 |
+| Nginx (Frontend) | 80 | HTTP（自动跳转 HTTPS） |
+| Nginx (Frontend) | 443 | HTTPS 用户访问入口 |
 | Gin (Backend) | 8080 | REST API |
 | PostgreSQL | 5432 | 数据库 |
 | Redis | 6379 | 缓存 |
+
+## SSL/HTTPS 配置
+
+### 配置文件说明
+
+涉及 SSL 的配置分布在三个文件中：
+
+| 文件 | 作用 |
+|------|------|
+| `Frontend/nginx.conf` | Nginx HTTPS server 块、SSL 证书路径、HTTP→HTTPS 跳转 |
+| `Frontend/Dockerfile` | 创建 `/etc/nginx/ssl` 目录、暴露 443 端口 |
+| `docker-compose.prod.yml` | 挂载证书目录到容器、映射 443 端口 |
+
+### 1. 上传证书到服务器
+
+将 `.pem`（证书链）和 `.key`（私钥）文件上传到服务器：
+
+```bash
+# 在服务器上创建 SSL 证书目录
+mkdir -p /data/openpanda/ssl
+
+# 从本地上传证书文件（替换为你的实际路径和服务器 IP）
+scp 你的证书.pem root@你的服务器:/data/openpanda/ssl/fullchain.pem
+scp 你的证书.key root@你的服务器:/data/openpanda/ssl/privkey.pem
+```
+
+> **注意**：文件名必须为 `fullchain.pem` 和 `privkey.pem`，与 `nginx.conf` 中的配置一致。
+
+### 2. 重新构建并推送镜像
+
+证书配置已内置在镜像中，无需每次修改。只需在首次或 nginx 配置变更时重新构建：
+
+```bash
+# 本地构建 + 推送
+make release
+# 或者
+npm run docker:release
+```
+
+### 3. 服务器上重新部署
+
+```bash
+cd /opt/openpanda
+
+# 拉取最新前端镜像
+docker-compose -f docker-compose.prod.yml pull frontend
+
+# 重启前端容器（会加载 SSL 证书）
+docker-compose -f docker-compose.prod.yml up -d frontend
+```
+
+### 4. 验证
+
+```bash
+# 检查 HTTPS 是否正常（应返回 200）
+curl -I https://你的域名
+
+# 检查 HTTP 是否自动跳转 HTTPS（应返回 301）
+curl -I http://你的域名
+```
+
+### SSL 证书续期
+
+证书到期前，只需替换 `/data/openpanda/ssl/` 下的文件，然后重启前端容器：
+
+```bash
+# 上传新证书覆盖旧文件
+scp 新证书.pem root@服务器:/data/openpanda/ssl/fullchain.pem
+scp 新证书.key root@服务器:/data/openpanda/ssl/privkey.pem
+
+# 重启前端容器使新证书生效
+docker-compose -f docker-compose.prod.yml restart frontend
+```
 
 ### 环境变量（docker-compose.prod.yml 中配置）
 
@@ -164,6 +238,6 @@ rsync -av /data/openpanda/uploads/ user@backup-server:/backups/openpanda-uploads
 |------|--------|------|
 | `JWT_SECRET` | 需修改 | JWT 签名密钥，生产务必更换 |
 | `ADMIN_USERNAME` | admin | 管理员用户名 |
-| `ADMIN_PASSWORD` | !Wo3158023 | 管理员密码，生产务必更换 |
+| `ADMIN_PASSWORD` | ⚠️ 必须设置 | 管理员密码，通过 Secrets 注入 |
 | `DB_PASSWORD` | postgres | 数据库密码 |
 | `REDIS_PASSWORD` | (空) | Redis 密码 |

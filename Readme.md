@@ -32,7 +32,7 @@ cd Backend && go run main.go
 cd Frontend && npm install && npm run dev
 ```
 
-浏览器打开 `http://localhost:3000`，默认管理员 `admin` / `!Wo3158023`。
+浏览器打开 `http://localhost:3000`，管理员账号密码由 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 环境变量配置。
 
 ---
 
