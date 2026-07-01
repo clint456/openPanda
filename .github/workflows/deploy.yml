@@ -1,0 +1,93 @@
+# ============================================================
+# GitHub Actions CI/CD — 自动构建 & 部署到服务器
+#
+# 触发条件: 推送到 main 分支
+#
+# 前置准备（在 GitHub 仓库 Settings → Secrets 中配置）:
+#   DOCKERHUB_USERNAME     DockerHub 用户名
+#   DOCKERHUB_TOKEN        DockerHub Access Token (Settings → Security)
+#   SSH_HOST               服务器 IP / 域名
+#   SSH_USER               服务器 SSH 用户 (如 root)
+#   SSH_PRIVATE_KEY        服务器 SSH 私钥
+#   SSH_PORT               服务器 SSH 端口 (默认 22)
+# ============================================================
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main, master]
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  # ============================================================
+  # Job 1: 构建并推送 Docker 镜像
+  # ============================================================
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      # ---------- 登录 DockerHub ----------
+      - name: 登录 DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ---------- 构建 & 推送后端镜像 ----------
+      # 注: package.json 的 build:backend 用了 Windows set 语法，
+      # CI 运行在 Linux 上，直接执行 Go 编译命令
+      - name: 编译后端 Go 二进制 (Linux amd64)
+        run: cd Backend && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o server main.go
+
+      - name: 构建并推送后端镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-backend:${{ github.sha }}
+
+      # ---------- 构建 & 推送前端镜像 ----------
+      - name: 构建并推送前端镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-frontend:${{ github.sha }}
+
+  # ============================================================
+  # Job 2: SSH 连接服务器并更新服务
+  # ============================================================
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: 部署到服务器
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          # 在服务器上执行的部署脚本
+          script: |
+            cd /root/openPanda
+
+            echo "========== 拉取最新镜像 =========="
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/openpanda-frontend:latest
+
+            echo "========== 重启服务（零停机） =========="
+            # 仅重启 backend 和 frontend，数据库不受影响
+            docker-compose -f docker-compose.prod.yml up -d --no-deps backend frontend
+
+            echo "========== 清理旧镜像 =========="
+            docker image prune -af
+
+            echo "========== 部署完成！ =========="
