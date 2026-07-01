@@ -32,6 +32,7 @@
       <div class="layout__container">
         <p>{{ $t('footer.copyright') }}</p>
         <p class="footer__powered">{{ $t('footer.poweredBy') }}</p>
+        <a href="https://beian.miit.gov.cn/" target="_blank">蜀ICP备2025151206号</a>
       </div>
     </footer>
   </div>

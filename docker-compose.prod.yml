@@ -77,6 +77,9 @@ services:
     restart: always
     ports:
       - '80:80'
+      - '443:443'
+    volumes:
+      - /data/openpanda/ssl:/etc/nginx/ssl:ro
     depends_on:
       - backend
 

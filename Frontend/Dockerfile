@@ -30,8 +30,12 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # 从编译阶段复制构建产物到 Nginx 静态目录
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# 创建 SSL 证书目录
+RUN mkdir -p /etc/nginx/ssl
+
 # 暴露端口
 EXPOSE 80
+EXPOSE 443
 
 # 启动 Nginx（前台运行）
 CMD ["nginx", "-g", "daemon off;"]
