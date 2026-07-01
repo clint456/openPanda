@@ -13,8 +13,6 @@
 # 数据全部存储在宿主机 /data/openpanda/ 下，
 # 不受容器删除/重建/软件更新影响。
 # ============================================================
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -25,7 +23,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-openpanda}
     ports:
-      - '127.0.0.1:5432:5432'   # 仅本地访问，安全加固
+      - '127.0.0.1:5432:5432'
     volumes:
       - /data/openpanda/pgdata:/var/lib/postgresql/data
       - /data/openpanda/backups:/backups
@@ -40,7 +38,7 @@ services:
     container_name: openpanda-redis
     restart: always
     ports:
-      - '127.0.0.1:6379:6379'   # 仅本地访问
+      - '127.0.0.1:6379:6379'
     volumes:
       - /data/openpanda/redis:/data
     healthcheck:
