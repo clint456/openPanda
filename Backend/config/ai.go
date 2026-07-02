@@ -1,7 +1,9 @@
 // ============================================================
 // 包名: config
 // 说明: AI 服务配置
-//       优先级：数据库设置 > 环境变量 > 默认值
+//
+//	优先级：数据库设置 > 环境变量 > 默认值
+//
 // ============================================================
 package config
 
@@ -86,4 +88,3 @@ func (cfg *AIProvidersConfig) MergeFromDB(dbSettings map[string]string) {
 func (c *AIProviderConfig) IsConfigured() bool {
 	return c.APIKey != ""
 }
-

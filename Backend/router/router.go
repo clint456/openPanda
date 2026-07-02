@@ -99,7 +99,7 @@ func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingCont
 		admin.DELETE("/categories/:id", articleController.DeleteCategory)
 
 		// --- AI 聊天 ---
-		admin.POST("/ai/chat", aiController.Chat)           // 聊天（SSE流式）
+		admin.POST("/ai/chat", aiController.Chat)              // 聊天（SSE流式）
 		admin.GET("/ai/providers", aiController.ListProviders) // 可用供应商列表
 
 		// --- AI 设置 ---

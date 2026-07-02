@@ -1,9 +1,11 @@
 // ============================================================
 // 包名: controller
 // 说明: AI 聊天控制器
-//       作为后端代理，转发请求到各 AI 供应商（DeepSeek/Qwen/OpenAI/Claude）
-//       支持 SSE（Server-Sent Events）流式响应
-//       API Key 存储在服务端环境变量，前端不可见
+//
+//	作为后端代理，转发请求到各 AI 供应商（DeepSeek/Qwen/OpenAI/Claude）
+//	支持 SSE（Server-Sent Events）流式响应
+//	API Key 存储在服务端环境变量，前端不可见
+//
 // ============================================================
 package controller
 
@@ -27,10 +29,10 @@ import (
 
 // ChatRequest 前端发送的聊天请求
 type ChatRequest struct {
-	Provider string          `json:"provider" binding:"required"` // deepseek / qwen / openai / anthropic
-	Model    string          `json:"model"`                       // 可选，覆盖默认模型
-	Messages []ChatMessage   `json:"messages" binding:"required"` // 对话历史
-	Stream   bool            `json:"stream"`                      // 是否流式（默认 true）
+	Provider string        `json:"provider" binding:"required"` // deepseek / qwen / openai / anthropic
+	Model    string        `json:"model"`                       // 可选，覆盖默认模型
+	Messages []ChatMessage `json:"messages" binding:"required"` // 对话历史
+	Stream   bool          `json:"stream"`                      // 是否流式（默认 true）
 }
 
 // ChatMessage 聊天消息
