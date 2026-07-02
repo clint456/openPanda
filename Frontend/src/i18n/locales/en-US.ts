@@ -66,4 +66,21 @@ export default {
     copyright: '© 2026 OpenPanda - Personal Tech Blog',
     poweredBy: 'Powered by Vue3 + Gin + PostgreSQL',
   },
+
+  // --- AI Assistant ---
+  ai: {
+    title: 'AI Assistant',
+    selectModel: 'Select Model',
+    clearChat: 'Clear Chat',
+    stop: 'Stop',
+    send: 'Send',
+    inputPlaceholder: 'Type your question, Enter to send, Shift+Enter for new line...',
+    welcomeTitle: 'Start AI Conversation',
+    welcomeDesc: 'Select an AI model and ask your question',
+    generating: 'AI is responding...',
+    connecting: 'Connecting to AI...',
+    copySuccess: 'Copied to clipboard',
+    copyFailed: 'Copy failed',
+    hint: 'Enter to send · Shift+Enter for new line',
+  },
 }

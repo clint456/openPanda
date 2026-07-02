@@ -33,7 +33,7 @@ import (
 //	  ├── /articles/search   (公开) 文章搜索
 //	  ├── /categories        (公开) 分类列表
 //	  └── /admin/articles    (需认证) 文章管理
-func SetupRouter(db *gorm.DB) *gin.Engine {
+func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingController *controller.SettingController) *gin.Engine {
 	// 创建 Gin 引擎（默认带 Logger 和 Recovery 中间件）
 	r := gin.Default()
 
@@ -96,6 +96,14 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		admin.POST("/categories", articleController.CreateCategory)
 		admin.PUT("/categories/:id", articleController.UpdateCategory)
 		admin.DELETE("/categories/:id", articleController.DeleteCategory)
+
+		// --- AI 聊天 ---
+		admin.POST("/ai/chat", aiController.Chat)           // 聊天（SSE流式）
+		admin.GET("/ai/providers", aiController.ListProviders) // 可用供应商列表
+
+		// --- AI 设置 ---
+		admin.GET("/settings/ai", settingController.GetAISettings)    // 获取 AI 配置
+		admin.PUT("/settings/ai", settingController.UpdateAISettings) // 更新 AI 配置
 	}
 
 	// ============================================================

@@ -38,7 +38,6 @@
         <!-- 写文章按钮（仅登录后显示） -->
         <el-button
           v-if="authStore.isLoggedIn"
-          type="primary"
           size="small"
           :icon="EditIcon"
           @click="goToEditor"
@@ -55,13 +54,13 @@
           专栏管理
         </el-button>
 
-        <!-- 登录/用户区 -->
-        <template v-if="authStore.isLoggedIn">
-          <span class="header__username">{{ authStore.username }}</span>
-          <el-button text size="small" @click="handleLogout">登出</el-button>
-        </template>
-        <el-button v-else text size="small" @click="router.push('/login')">
-          登录
+        <!-- AI 助手（仅登录后显示） -->
+        <el-button
+          v-if="authStore.isLoggedIn"
+          size="small"
+          @click="router.push('/admin/ai')"
+        >
+          AI 助手
         </el-button>
 
         <!-- 语言切换按钮 -->
@@ -80,6 +79,15 @@
           @click="appStore.toggleDark()"
           title="夜间模式"
         />
+
+        <!-- 登录/用户区 -->
+        <template v-if="authStore.isLoggedIn">
+          <el-button text size="small" @click="handleLogout">登出</el-button>
+          <span class="header__username">{{ authStore.username }}</span>
+        </template>
+        <el-button v-else text size="small" @click="router.push('/login')">
+          登录
+        </el-button>
 
         <!-- 移动端菜单按钮（桌面端隐藏） -->
         <el-button

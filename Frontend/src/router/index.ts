@@ -68,6 +68,12 @@ const routes: RouteRecordRaw[] = [
     name: 'CategoryManage',
     component: () => import('@/views/Category/Manage.vue'),
     meta: { title: '专栏管理', requiresAuth: true },
+  },
+  {
+    path: '/admin/ai',
+    name: 'AIChat',
+    component: () => import('@/views/AI/Chat.vue'),
+    meta: { title: 'AI 助手', requiresAuth: true },
   },  // 后续拓展示例：
   // {
   //   path: '/categories/:slug',

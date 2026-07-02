@@ -68,4 +68,21 @@ export default {
     copyright: '© 2026 开源熊猫 - 嵌入式技术交流平台',
     poweredBy: 'Powered by Vue3 + Gin + PostgreSQL',
   },
+
+  // --- AI 助手 ---
+  ai: {
+    title: 'AI 助手',
+    selectModel: '选择模型',
+    clearChat: '清空对话',
+    stop: '停止',
+    send: '发送',
+    inputPlaceholder: '输入你的问题，按 Enter 发送，Shift+Enter 换行...',
+    welcomeTitle: '开始 AI 对话',
+    welcomeDesc: '选择一个 AI 模型，然后输入你的问题',
+    generating: 'AI 回复中...',
+    connecting: '正在连接 AI...',
+    copySuccess: '已复制到剪贴板',
+    copyFailed: '复制失败',
+    hint: 'Enter 发送 · Shift+Enter 换行',
+  },
 }

@@ -20,8 +20,10 @@ import (
 	"log"
 
 	"openpanda-backend/config"
+	"openpanda-backend/controller"
 	"openpanda-backend/model"
 	"openpanda-backend/router"
+	"openpanda-backend/service"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -67,6 +69,7 @@ func main() {
 		&model.Article{},
 		&model.Category{},
 		&model.Tag{},
+		&model.Setting{}, // 系统设置表
 		// 后续拓展：在此添加新的 model
 		// &model.User{},
 		// &model.Comment{},
@@ -77,15 +80,29 @@ func main() {
 	log.Println("✅ 数据库表结构已同步")
 
 	// ============================================================
-	// 4. 初始化种子数据（可选）
-	//    首次运行时插入默认分类数据
+	// 4. 初始化种子数据
 	// ============================================================
 	seedDefaultCategories(db)
 
+	// --- 初始化 AI 设置种子数据 ---
+	settingService := service.NewSettingService(db)
+	settingService.SeedAISettings()
+
 	// ============================================================
-	// 5. 设置路由并启动服务
+	// 5. 加载 AI 配置（env + DB 合并）
 	// ============================================================
-	r := router.SetupRouter(db)
+	aiCfg := config.LoadAIConfig()
+	aiDBMap, _ := settingService.GetMapByGroup("ai")
+	aiCfg.MergeFromDB(aiDBMap)
+	aiController := controller.NewAIController(aiCfg)
+
+	// --- 创建设置控制器 ---
+	settingController := controller.NewSettingController(settingService, aiController)
+
+	// ============================================================
+	// 6. 设置路由并启动服务
+	// ============================================================
+	r := router.SetupRouter(db, aiController, settingController)
 
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
 	log.Printf("🚀 服务器启动在 http://localhost%s", addr)
