@@ -12,7 +12,7 @@ export default {
     home: '首页',
     articles: '技术文章',
     categories: '技术专栏',
-    about: '关于',
+    about: '关于作者',
     search: '搜索',
     loading: '加载中...',
     noData: '暂无数据',
@@ -61,6 +61,12 @@ export default {
     hardwareDesignDesc: '原理图设计、PCB布局、硬件调试技巧',
     mcuDevelopment: '单片机开发',
     mcuDevelopmentDesc: 'STM32、ESP32等单片机开发教程与项目实战',
+  },
+
+  // --- 关于 ---
+  about: {
+    title: '关于作者',
+    subtitle: '嵌入式软件开发者 · RK3568 · EdgeX 边缘计算',
   },
 
   // --- 页脚 ---

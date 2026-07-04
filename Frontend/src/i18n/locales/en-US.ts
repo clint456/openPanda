@@ -61,6 +61,12 @@ export default {
     mcuDevelopmentDesc: 'STM32, ESP32 tutorials and project practices',
   },
 
+  // --- About ---
+  about: {
+    title: 'About Me',
+    subtitle: 'Embedded Software Developer · RK3568 · EdgeX Edge Computing',
+  },
+
   // --- Footer ---
   footer: {
     copyright: '© 2026 OpenPanda - Personal Tech Blog',

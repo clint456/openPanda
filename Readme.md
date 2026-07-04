@@ -43,7 +43,7 @@ cd Frontend && npm install && npm run dev
 npm run docker:release
 
 # 服务器上启动
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ---

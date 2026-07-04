@@ -29,6 +29,7 @@
       >
         <el-menu-item index="/">{{ $t('common.home') }}</el-menu-item>
         <el-menu-item index="/articles">{{ $t('common.articles') }}</el-menu-item>
+        <el-menu-item index="/about">{{ $t('common.about') }}</el-menu-item>
       </el-menu>
 
       <!-- ============================================================

@@ -34,11 +34,11 @@ backup_db() {
 }
 
 show_logs() {
-    $COMPOSE_CMD -f "$COMPOSE_FILE" logs -f --tail=100
+    $COMPOSE_CMD -p openpanda -f "$COMPOSE_FILE" logs -f --tail=100
 }
 
 status() {
-    $COMPOSE_CMD -f "$COMPOSE_FILE" ps
+    $COMPOSE_CMD -p openpanda -f "$COMPOSE_FILE" ps
     echo ""
     echo "磁盘使用:"
     df -h /data

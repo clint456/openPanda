@@ -35,6 +35,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '技术文章' },
   },
   {
+    path: '/about',
+    name: 'About',
+    component: () => import('@/views/About/index.vue'),
+    meta: { title: '关于作者' },
+  },
+  {
     path: '/articles/new',       // 新建文章（必须放在 /:id 之前）
     name: 'ArticleCreate',
     component: () => import('@/views/Article/Editor.vue'),

@@ -36,7 +36,7 @@ mkdir -p /data/openpanda/{pgdata,uploads,backups}
 
 # 2. 启动
 cd /opt/openpanda
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ## 软件更新流程
@@ -45,10 +45,10 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 cd /opt/openpanda
 
 # 拉取新镜像（不影响数据）
-docker-compose -f deploy/docker-compose.prod.yml pull
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull
 
 # 重建容器（volume 数据保留）
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 
 # 确认数据完好
 ls /data/openpanda/pgdata/
@@ -107,7 +107,7 @@ scp -r deploy/ root@server:/opt/openpanda/
 cd /opt/openpanda
 
 # 4. 启动全部服务
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 
 # 5. 如需恢复数据库
 docker exec -i openpanda-db psql -U postgres openpanda \

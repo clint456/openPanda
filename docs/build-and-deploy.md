@@ -116,7 +116,7 @@ ssh user@server
 cd /opt/openpanda
 
 # 4. 启动
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 > 所有数据存储在宿主机 `/data/openpanda/` 下，容器删除或软件更新都不会丢失。
@@ -125,8 +125,8 @@ docker-compose -f deploy/docker-compose.prod.yml up -d
 
 ```bash
 cd /opt/openpanda
-docker-compose -f deploy/docker-compose.prod.yml pull
-docker-compose -f deploy/docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ### 数据备份
@@ -218,10 +218,10 @@ npm run docker:release
 cd /opt/openpanda
 
 # 拉取最新前端镜像
-docker-compose -f deploy/docker-compose.prod.yml pull frontend
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull frontend
 
 # 重启前端容器（会加载 SSL 证书）
-docker-compose -f deploy/docker-compose.prod.yml up -d frontend
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d frontend
 ```
 
 ### 4. 验证
