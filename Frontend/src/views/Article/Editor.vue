@@ -107,6 +107,7 @@ import 'md-editor-v3/lib/style.css'
 import { getCategories, createArticle, updateArticle, getArticleById } from '@/api/modules/article'
 import { uploadImage } from '@/api/modules/upload'
 import { useAppStore } from '@/stores/app'
+import { parseArticleId } from '@/utils'
 import type { Category, ArticleFormData } from '@/types'
 
 const route = useRoute()
@@ -117,10 +118,12 @@ const appStore = useAppStore()
 // 判断是编辑模式还是新建模式
 // ============================================================
 
-/** 是否是编辑模式（URL 带 :id 参数则为编辑） */
-const isEdit = computed<boolean>(() => !!route.params.id)
-/** 编辑模式下的文章ID（新建时不需要） */
-const editId = computed<number>(() => (isEdit.value ? Number(route.params.id) : 0))
+/** 从路由 slug 参数提取文章数字 ID（URL 格式: /articles/:slug/edit，如 /articles/123-my-title/edit） */
+const slugParam = computed<string>(() => (route.params.slug as string) || '')
+/** 编辑模式下的文章ID（新建时为 0） */
+const editId = computed<number>(() => parseArticleId(slugParam.value))
+/** 是否是编辑模式（能提取到有效 ID 则为编辑） */
+const isEdit = computed<boolean>(() => editId.value > 0)
 
 // ============================================================
 // 表单数据
