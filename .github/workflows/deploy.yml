@@ -15,6 +15,7 @@
 #   JWT_SECRET             JWT 签名密钥 (node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 #   ADMIN_USERNAME         管理员登录用户名
 #   ADMIN_PASSWORD         管理员登录密码
+#   SITE_URL               站点 URL（如 https://openpanda.your-domain.com）
 # ============================================================
 name: Build & Deploy
 
@@ -76,15 +77,15 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      # 先把最新的 compose 文件上传到服务器
-      - name: 同步 docker-compose.prod.yml 到服务器
+      # 先把最新的部署文件上传到服务器
+      - name: 同步 deploy/ 到服务器
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          source: docker-compose.prod.yml
+          source: deploy/
           target: /root/openPanda/
           overwrite: true
 
@@ -109,6 +110,7 @@ jobs:
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }}
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
+            SITE_URL=${{ secrets.SITE_URL }}
             ENVEOF
 
             # 确保 .env 没有 Windows 换行符
@@ -130,7 +132,7 @@ jobs:
             echo "使用: $COMPOSE_CMD"
 
             echo "========== 重启服务（强制重建容器以加载新环境变量） =========="
-            $COMPOSE_CMD --env-file .env -f docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
+            $COMPOSE_CMD --env-file .env -f deploy/docker-compose.prod.yml up -d --no-deps --force-recreate backend frontend
 
             echo "========== 清理旧镜像（保留正在使用的镜像） =========="
             docker image prune -af

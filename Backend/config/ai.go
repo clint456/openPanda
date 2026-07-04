@@ -27,24 +27,24 @@ type AIProviderConfig struct {
 func LoadAIConfig() *AIProvidersConfig {
 	return &AIProvidersConfig{
 		DeepSeek: AIProviderConfig{
-			APIKey:  getEnv("DEEPSEEK_API_KEY", ""),
-			BaseURL: getEnv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
-			Model:   getEnv("DEEPSEEK_MODEL", "deepseek-chat"),
+			APIKey:  GetEnv("DEEPSEEK_API_KEY", ""),
+			BaseURL: GetEnv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
+			Model:   GetEnv("DEEPSEEK_MODEL", "deepseek-chat"),
 		},
 		Qwen: AIProviderConfig{
-			APIKey:  getEnv("QWEN_API_KEY", ""),
-			BaseURL: getEnv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
-			Model:   getEnv("QWEN_MODEL", "qwen-plus"),
+			APIKey:  GetEnv("QWEN_API_KEY", ""),
+			BaseURL: GetEnv("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
+			Model:   GetEnv("QWEN_MODEL", "qwen-plus"),
 		},
 		OpenAI: AIProviderConfig{
-			APIKey:  getEnv("OPENAI_API_KEY", ""),
-			BaseURL: getEnv("OPENAI_BASE_URL", "https://api.openai.com"),
-			Model:   getEnv("OPENAI_MODEL", "gpt-4o"),
+			APIKey:  GetEnv("OPENAI_API_KEY", ""),
+			BaseURL: GetEnv("OPENAI_BASE_URL", "https://api.openai.com"),
+			Model:   GetEnv("OPENAI_MODEL", "gpt-4o"),
 		},
 		Anthropic: AIProviderConfig{
-			APIKey:  getEnv("ANTHROPIC_API_KEY", ""),
-			BaseURL: getEnv("ANTHROPIC_BASE_URL", "https://api.anthropic.com"),
-			Model:   getEnv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022"),
+			APIKey:  GetEnv("ANTHROPIC_API_KEY", ""),
+			BaseURL: GetEnv("ANTHROPIC_BASE_URL", "https://api.anthropic.com"),
+			Model:   GetEnv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022"),
 		},
 	}
 }
