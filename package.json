@@ -12,7 +12,7 @@
     "docker:up": "docker-compose -f deploy/docker-compose.yml up -d",
     "docker:down": "docker-compose -f deploy/docker-compose.yml down",
     "docker:logs": "docker-compose -f deploy/docker-compose.yml logs -f",
-    "docker:build:backend": "npm run build:backend && docker build -t clintonluo/openpanda-backend:latest ./Backend",
+    "docker:build:backend": "docker build -t clintonluo/openpanda-backend:latest ./Backend",
     "docker:build:frontend": "npm run build:frontend && docker build -t clintonluo/openpanda-frontend:latest ./Frontend",
     "docker:build": "npm run docker:build:backend && npm run docker:build:frontend",
     "docker:push:backend": "docker push clintonluo/openpanda-backend:latest",

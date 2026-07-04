@@ -28,11 +28,11 @@ build-local:
 	cd Backend && go build -o server.exe main.go
 
 # ---------- Docker ----------
-docker: build
+docker: 
 	docker build -t clintonluo/openpanda-backend:latest ./Backend
 	docker build -t clintonluo/openpanda-frontend:latest ./Frontend
 
-docker-backend: build
+docker-backend:
 	docker build -t clintonluo/openpanda-backend:latest ./Backend
 
 docker-frontend:

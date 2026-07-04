@@ -72,10 +72,9 @@ npm run docker:release            # 一键构建 + 推送
 npm run docker:release
 
   ├── npm run docker:build:backend
-  │   ├── npm run build:backend       ← 交叉编译 Linux 二进制
-  │   │   CGO_ENABLED=0 GOOS=linux go build → Backend/server
   │   └── docker build -t clintonluo/openpanda-backend ./Backend
-  │       └── COPY server → alpine → 最终镜像 ~15MB
+  │       ├── Stage1: golang:1.21-alpine → go build（自动交叉编译 Linux 二进制）
+  │       └── Stage2: alpine → 复制二进制 → 最终镜像 ~15MB
   │
   ├── npm run docker:build:frontend
   │   ├── npm run build:frontend      ← vite build → dist/
