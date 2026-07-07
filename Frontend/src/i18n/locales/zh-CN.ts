@@ -65,8 +65,7 @@ export default {
 
   // --- 关于 ---
   about: {
-    name: '罗钦文',
-    phone: '19985813415',
+    name: 'Clinton',
     email: 'clinton_luo@163.com',
     githubUrl: 'https://github.com/clint456',
     site: 'clintonluo.com',
