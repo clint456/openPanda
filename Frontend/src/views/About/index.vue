@@ -1,112 +1,109 @@
 <!--
   文件: views/About/index.vue
-  说明: 关于作者页面
-        展示作者简介、GitHub 统计、技术栈、项目经历
+  说明: 关于作者简历页
 -->
 <template>
   <div class="about-page">
+    <!-- 头部 -->
     <div class="about__header">
-      <h1>{{ $t('about.title') }}</h1>
-      <p class="about__subtitle">{{ $t('about.subtitle') }}</p>
-    </div>
-
-    <!-- GitHub 统计卡片 -->
-    <div class="about__stats">
-      <img
-        src="https://github-stats-extended.vercel.app/api?username=clint456&include_all_commits=true&theme=ocean_dark"
-        alt="GitHub Stats"
-        class="stats__card"
-      />
-      <img
-        src="https://github-stats-extended.vercel.app/api/top-langs?username=clint456&langs_count=6&theme=chartreuse-dark"
-        alt="Top Languages"
-        class="stats__card"
-      />
-      <img
-        src="https://github-stats-extended.vercel.app/api/wakatime?username=alan&langs_count=5&display_format=percent&theme=chartreuse-dark"
-        alt="WakaTime Stats"
-        class="stats__card"
-      />
-    </div>
-
-    <!-- 关于我 -->
-    <div class="about__section">
-      <h2>👋 关于我</h2>
-      <p>
-        嵌入式软件开发者，专注于 <strong>RK3568 嵌入式开发</strong>与
-        <strong>EdgeX 边缘计算</strong>领域。擅长使用 <strong>Golang</strong>
-        与 Docker 容器化技术，构建部署轻量稳定的边缘物联网服务，
-        信奉 <strong>"think less, do more"</strong> 的工程哲学。
+      <h1>{{ $t('about.name') }}</h1>
+      <p class="about__contact">
+        <span>📱 {{ $t('about.phone') }}</span>
+        <span>📧 {{ $t('about.email') }}</span>
+        <a :href="$t('about.githubUrl')" target="_blank">💻 GitHub</a>
+        <a :href="$t('about.siteUrl')" target="_blank">🌐 {{ $t('about.site') }}</a>
       </p>
     </div>
 
-    <!-- 项目与技术实践 -->
+    <!-- 工作经历 -->
     <div class="about__section">
-      <h2>⚡ 项目与技术实践</h2>
-      <ul class="about__list">
-        <li>
-          <strong>EdgeX 开发</strong>：熟练掌握 device-core-application 分层架构，
-          实现传感器数据采集、过滤、处理与 HTTP / MQTT 转发。
-        </li>
-        <li>
-          <strong>嵌入式部署</strong>：在 RK3568 边缘板卡上完成 Docker + Go
-          运行环境配置与 EdgeX 容器化部署。
-        </li>
-        <li>
-          <strong>Linux 实践</strong>：熟悉 Ubuntu 开发环境与 VMware 虚拟化操作，
-          支撑嵌入式项目调试。
-        </li>
-        <li>
-          <strong>基础技术 & 文档沉淀</strong>：掌握 C++ 排序算法与 CMake 编译；
-          技术实践全部记录于
-          <a href="https://clint456.github.io" target="_blank">clint456.github.io</a>。
-        </li>
-      </ul>
+      <h2>💼 {{ $t('about.workTitle') }}</h2>
+
+      <div class="exp__item">
+        <div class="exp__head">
+          <strong>{{ $t('about.work1.role') }}</strong>
+          <el-tag size="small" type="success">{{ $t('about.work1.status') }}</el-tag>
+        </div>
+        <p class="exp__org">{{ $t('about.work1.org') }}</p>
+        <ul>
+          <li v-for="(item, i) in $t('about.work1.points')" :key="i">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="exp__item">
+        <div class="exp__head">
+          <strong>{{ $t('about.work2.role') }}</strong>
+          <span class="exp__date">{{ $t('about.work2.date') }}</span>
+        </div>
+        <p class="exp__org">{{ $t('about.work2.org') }}</p>
+        <p class="exp__desc">{{ $t('about.work2.desc') }}</p>
+      </div>
+
+      <div class="exp__item">
+        <div class="exp__head">
+          <strong>{{ $t('about.work3.role') }}</strong>
+          <span class="exp__date">{{ $t('about.work3.date') }}</span>
+        </div>
+        <p class="exp__org">{{ $t('about.work3.org') }}</p>
+        <p class="exp__desc">{{ $t('about.work3.desc') }}</p>
+      </div>
     </div>
 
-    <!-- 核心技术栈 -->
+    <!-- 项目经历 -->
     <div class="about__section">
-      <h2>🛠️ 核心技术栈</h2>
-      <div class="about__skills">
-        <div class="skill__group">
-          <span class="skill__label">平台</span>
-          <el-tag>RK3568</el-tag>
-          <el-tag>Linux (Ubuntu)</el-tag>
+      <h2>🚀 {{ $t('about.projectsTitle') }}</h2>
+
+      <div v-for="proj in $t('about.projects')" :key="proj.name" class="proj__item">
+        <div class="proj__head">
+          <strong>{{ proj.name }}</strong>
+          <span class="proj__date" v-if="proj.date">{{ proj.date }}</span>
         </div>
-        <div class="skill__group">
-          <span class="skill__label">框架</span>
-          <el-tag type="success">EdgeX Foundry</el-tag>
-        </div>
-        <div class="skill__group">
-          <span class="skill__label">语言</span>
-          <el-tag type="warning">Golang</el-tag>
-          <el-tag type="warning">C / C++</el-tag>
-        </div>
-        <div class="skill__group">
-          <span class="skill__label">工具</span>
-          <el-tag type="danger">Docker</el-tag>
-          <el-tag type="danger">CMake</el-tag>
-          <el-tag type="danger">VMware</el-tag>
+        <p class="proj__stack"><em>{{ proj.stack }}</em></p>
+        <ul v-if="proj.points">
+          <li v-for="(pt, i) in proj.points" :key="i">{{ pt }}</li>
+        </ul>
+        <p v-if="proj.desc" class="proj__desc">{{ proj.desc }}</p>
+      </div>
+    </div>
+
+    <!-- 专业技能 -->
+    <div class="about__section">
+      <h2>🛠️ {{ $t('about.skillsTitle') }}</h2>
+      <div class="skills__grid">
+        <div v-for="sk in $t('about.skills')" :key="sk.label" class="skill__card">
+          <span class="skill__label">{{ sk.label }}</span>
+          <p class="skill__text">{{ sk.text }}</p>
         </div>
       </div>
     </div>
 
-    <!-- 兴趣爱好 -->
+    <!-- 教育 -->
     <div class="about__section">
-      <h2>🎮 兴趣爱好</h2>
-      <p>业余时间喜欢打 CS2，定期健身，保持平衡高效的生活方式。</p>
+      <h2>🎓 {{ $t('about.eduTitle') }}</h2>
+      <p><strong>{{ $t('about.edu.school') }}</strong> · {{ $t('about.edu.major') }} · {{ $t('about.edu.date') }}</p>
+      <ul>
+        <li v-for="(item, i) in $t('about.edu.points')" :key="i">{{ item }}</li>
+      </ul>
+    </div>
+
+    <!-- 竞赛 & 证书 -->
+    <div class="about__section">
+      <h2>🏆 {{ $t('about.awardsTitle') }}</h2>
+      <ul>
+        <li v-for="(item, i) in $t('about.awards')" :key="i">{{ item }}</li>
+      </ul>
     </div>
 
     <!-- 底部 -->
     <div class="about__footer">
       <el-divider />
-      <p>🚀 <strong>持续学习，实践探索，知识分享。</strong></p>
+      <p>🚀 <strong>{{ $t('about.footer') }}</strong></p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// 纯静态页面，无需逻辑
+// 纯静态页面，内容由 i18n 驱动
 </script>
 
 <style scoped>
@@ -115,111 +112,154 @@
   margin: 0 auto;
 }
 
+/* Header */
 .about__header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
-
 .about__header h1 {
-  font-size: 32px;
+  font-size: 30px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-
-.about__subtitle {
-  color: #909399;
-  font-size: 16px;
-}
-
-/* GitHub 统计卡片 */
-.about__stats {
+.about__contact {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 16px;
-  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: #606266;
+  font-size: 14px;
 }
-
-.stats__card {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-
-/* 内容区块 */
-.about__section {
-  background: #fff;
-  padding: 28px 32px;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-}
-
-.about__section h2 {
-  font-size: 20px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
-}
-
-.about__section p {
-  line-height: 1.9;
-  color: #303133;
-}
-
-/* 技术实践列表 */
-.about__list {
-  padding-left: 20px;
-  line-height: 2;
-}
-
-.about__list li {
-  margin-bottom: 8px;
-}
-
-.about__list a {
+.about__contact a {
   color: #409eff;
   text-decoration: none;
 }
-
-.about__list a:hover {
+.about__contact a:hover {
   text-decoration: underline;
 }
 
-/* 技能标签 */
-.about__skills {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* Section */
+.about__section {
+  background: #fff;
+  padding: 24px 28px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.about__section h2 {
+  font-size: 19px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
 }
 
-.skill__group {
+/* Experience */
+.exp__item {
+  margin-bottom: 18px;
+}
+.exp__item:last-child { margin-bottom: 0; }
+.exp__head {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
-
-.skill__label {
-  font-weight: bold;
-  min-width: 48px;
+.exp__org {
+  color: #909399;
+  font-size: 13px;
+  margin: 2px 0 6px;
+}
+.exp__date {
+  color: #909399;
+  font-size: 13px;
+}
+.exp__desc {
   color: #606266;
+  line-height: 1.8;
+}
+.about__section ul {
+  padding-left: 18px;
+  line-height: 1.9;
+  color: #303133;
+  margin: 4px 0 0;
+}
+.about__section li {
+  margin-bottom: 4px;
 }
 
+/* Projects */
+.proj__item {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px dashed #ebeef5;
+}
+.proj__item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.proj__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.proj__date {
+  color: #909399;
+  font-size: 13px;
+}
+.proj__stack {
+  color: #909399;
+  font-size: 13px;
+  margin: 2px 0 6px;
+}
+.proj__desc {
+  color: #606266;
+  font-size: 14px;
+}
+
+/* Skills grid */
+.skills__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.skill__card {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+.skill__label {
+  font-weight: bold;
+  font-size: 13px;
+  color: #409eff;
+  display: block;
+  margin-bottom: 4px;
+}
+.skill__text {
+  margin: 0;
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.7;
+}
+
+/* Footer */
 .about__footer {
   text-align: center;
   color: #909399;
-  padding: 16px 0;
+  padding: 8px 0 20px;
 }
 
 @media (max-width: 768px) {
-  .about__stats {
+  .about__section {
+    padding: 18px 14px;
+  }
+  .skills__grid {
+    grid-template-columns: 1fr;
+  }
+  .about__contact {
     flex-direction: column;
     align-items: center;
-  }
-
-  .about__section {
-    padding: 20px 16px;
   }
 }
 </style>
