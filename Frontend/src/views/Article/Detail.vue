@@ -18,6 +18,14 @@
           {{ $t('article.backToList') }}
         </el-button>
         <div v-if="authStore.isLoggedIn" class="article__admin-actions">
+          <el-switch
+            :model-value="article.is_public"
+            size="small"
+            active-text="公开"
+            inactive-text="隐藏"
+            inline-prompt
+            @change="handleToggleVisibility"
+          />
           <el-button text type="primary" :icon="EditIcon" @click="goEdit">
             编辑
           </el-button>
@@ -79,7 +87,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft as ArrowLeftIcon, Edit as EditIcon, Delete as DeleteIcon } from '@element-plus/icons-vue'
-import { getArticleById, deleteArticle } from '@/api/modules/article'
+import { getArticleById, deleteArticle, setArticleVisibility } from '@/api/modules/article'
 import { useAuthStore } from '@/stores/auth'
 import { marked } from 'marked'       // Markdown 解析器
 import { parseArticleId, getArticleUrl } from '@/utils'
@@ -159,6 +167,18 @@ async function handleDelete(): Promise<void> {
     router.push('/articles')
   } catch {
     ElMessage.error('删除失败')
+  }
+}
+
+/** 切换文章可见性 */
+async function handleToggleVisibility(isPublic: boolean): Promise<void> {
+  if (!article.value) return
+  try {
+    await setArticleVisibility(article.value.id, isPublic)
+    article.value.is_public = isPublic
+    ElMessage.success(isPublic ? '已设为公开' : '已设为隐藏')
+  } catch {
+    ElMessage.error('操作失败')
   }
 }
 </script>

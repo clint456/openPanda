@@ -87,8 +87,10 @@ func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingCont
 	{
 		// --- 文章管理 ---
 		admin.POST("/articles", articleController.CreateArticle)
+		admin.GET("/articles", articleController.GetAdminArticleList)          // 管理端文章列表（含非公开）
 		admin.PUT("/articles/:id", articleController.UpdateArticle)
 		admin.DELETE("/articles/:id", articleController.DeleteArticle)
+		admin.PUT("/articles/:id/visibility", articleController.SetArticleVisibility) // 设置文章可见性
 
 		// --- 图片上传 ---
 		admin.POST("/upload/image", uploadController.UploadImage)

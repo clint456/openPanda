@@ -14,6 +14,7 @@ package controller
 import (
 	"strconv"
 
+	"openpanda-backend/middleware"
 	"openpanda-backend/model"
 	"openpanda-backend/service"
 	"openpanda-backend/utils"
@@ -89,6 +90,12 @@ func (ctrl *ArticleController) GetArticleDetail(c *gin.Context) {
 		return
 	}
 
+	// 未登录用户只能查看已公开的文章
+	if _, isLogin := middleware.TryGetUserID(c); !isLogin && !article.IsPublic {
+		utils.NotFound(c, "文章不存在")
+		return
+	}
+
 	// 异步增加阅读量（不影响接口响应速度）
 	go func() {
 		_ = ctrl.ArticleService.IncrementViewCount(uint(id))
@@ -116,6 +123,7 @@ func (ctrl *ArticleController) CreateArticle(c *gin.Context) {
 		CategoryID uint   `json:"category_id" binding:"required"` // 分类必填
 		TagIDs     []uint `json:"tag_ids"`                        // 标签ID列表（可选）
 		Language   string `json:"language"`                       // 语言: zh/en/both
+		IsPublic   bool   `json:"is_public"`                      // 是否对未登录用户可见
 	}
 
 	// 绑定并校验 JSON 请求体
@@ -133,6 +141,7 @@ func (ctrl *ArticleController) CreateArticle(c *gin.Context) {
 		CategoryID:  input.CategoryID,
 		Language:    input.Language,
 		IsPublished: true,
+		IsPublic:    input.IsPublic,
 	}
 
 	// 处理标签关联（如果传了标签ID列表）
@@ -176,6 +185,7 @@ func (ctrl *ArticleController) UpdateArticle(c *gin.Context) {
 		CoverImage string `json:"cover_image"`
 		CategoryID uint   `json:"category_id"`
 		Language   string `json:"language"`
+		IsPublic   *bool  `json:"is_public"` // 指针类型区分"未传"和"传false"
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -201,6 +211,10 @@ func (ctrl *ArticleController) UpdateArticle(c *gin.Context) {
 	}
 	if input.Language != "" {
 		existing.Language = input.Language
+	}
+	// is_public 指针非 nil 表示前端传了值
+	if input.IsPublic != nil {
+		existing.IsPublic = *input.IsPublic
 	}
 
 	if err := ctrl.ArticleService.Update(existing); err != nil {
@@ -373,4 +387,62 @@ func (ctrl *ArticleController) DeleteCategory(c *gin.Context) {
 		return
 	}
 	utils.Success(c, nil)
+}
+
+// ============================================================
+// 文章可见性管理接口
+// ============================================================
+
+// GetAdminArticleList 管理端获取所有文章列表（含非公开文章）
+// GET /api/v1/admin/articles
+func (ctrl *ArticleController) GetAdminArticleList(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+	categoryID, _ := strconv.ParseUint(c.DefaultQuery("category_id", "0"), 10, 64)
+	tagID, _ := strconv.ParseUint(c.DefaultQuery("tag_id", "0"), 10, 64)
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 50 {
+		pageSize = 10
+	}
+
+	articles, total, err := ctrl.ArticleService.GetAdminList(page, pageSize, uint(categoryID), uint(tagID))
+	if err != nil {
+		utils.InternalError(c, "获取文章列表失败")
+		return
+	}
+
+	utils.SuccessWithPage(c, utils.PageData{
+		List:     articles,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	})
+}
+
+// SetArticleVisibility 设置文章对未登录用户的可见性
+// PUT /api/v1/admin/articles/:id/visibility
+func (ctrl *ArticleController) SetArticleVisibility(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.BadRequest(c, "文章ID格式错误")
+		return
+	}
+
+	var input struct {
+		IsPublic bool `json:"is_public"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.BadRequest(c, "参数错误")
+		return
+	}
+
+	if err := ctrl.ArticleService.SetPublic(uint(id), input.IsPublic); err != nil {
+		utils.InternalError(c, "设置可见性失败")
+		return
+	}
+
+	utils.SuccessWithMessage(c, "设置成功", nil)
 }

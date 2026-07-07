@@ -42,6 +42,7 @@ export interface Article {
   category_id: number   // 所属分类ID
   view_count: number    // 阅读量
   is_published: boolean // 是否已发布
+  is_public: boolean    // 是否对未登录用户可见
   language: 'zh' | 'en' | 'both'  // 语言（联合类型，只能是这三个值之一）
   created_at: string
   updated_at: string
@@ -93,6 +94,7 @@ export interface ArticleFormData {
   category_id: number
   tag_ids?: number[]
   language?: 'zh' | 'en' | 'both'
+  is_public?: boolean
 }
 
 // ============================================================

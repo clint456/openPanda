@@ -59,6 +59,10 @@
         <el-input v-model="form.cover_image" placeholder="封面图链接（可选）" />
       </el-form-item>
 
+      <el-form-item label="公开可见">
+        <el-switch v-model="form.is_public" active-text="未登录用户可见" inactive-text="仅登录后可见" />
+      </el-form-item>
+
       <!-- ============================================================
       Markdown 编辑器（核心）
       md-editor-v3 组件说明：
@@ -134,6 +138,7 @@ const form = reactive<ArticleFormData>({
   category_id: 0,
   tag_ids: [],
   language: 'zh',
+  is_public: false,
 })
 
 // ============================================================
@@ -210,6 +215,7 @@ async function loadArticle(id: number): Promise<void> {
       form.cover_image = article.cover_image || ''
       form.category_id = article.category_id
       form.language = (article.language as 'zh' | 'en' | 'both') || 'zh'
+      form.is_public = article.is_public
     }
   } catch {
     ElMessage.error('文章加载失败')

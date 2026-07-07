@@ -42,8 +42,8 @@ func (s *ArticleService) GetList(page, pageSize int, categoryID, tagID uint) ([]
 	var articles []model.Article
 	var total int64
 
-	// 构建查询条件
-	query := s.DB.Model(&model.Article{}).Where("is_published = ?", true)
+	// 构建查询条件：仅展示已发布且对公开可见的文章
+	query := s.DB.Model(&model.Article{}).Where("is_published = ? AND is_public = ?", true, true)
 
 	// 按分类筛选
 	if categoryID > 0 {
@@ -121,7 +121,7 @@ func (s *ArticleService) IncrementViewCount(id uint) error {
 func (s *ArticleService) GetHotArticles(limit int) ([]model.Article, error) {
 	var articles []model.Article
 	if err := s.DB.
-		Where("is_published = ?", true).
+		Where("is_published = ? AND is_public = ?", true, true).
 		Order("view_count DESC").
 		Limit(limit).
 		Preload("Category").
@@ -135,7 +135,7 @@ func (s *ArticleService) GetHotArticles(limit int) ([]model.Article, error) {
 func (s *ArticleService) GetAllPublished() ([]model.Article, error) {
 	var articles []model.Article
 	if err := s.DB.
-		Where("is_published = ?", true).
+		Where("is_published = ? AND is_public = ?", true, true).
 		Order("updated_at DESC").
 		Find(&articles).Error; err != nil {
 		return nil, err
@@ -149,8 +149,49 @@ func (s *ArticleService) Search(keyword string, page, pageSize int) ([]model.Art
 	var total int64
 
 	query := s.DB.Model(&model.Article{}).
-		Where("is_published = ?", true).
+		Where("is_published = ? AND is_public = ?", true, true).
 		Where("title LIKE ? OR content LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	offset := (page - 1) * pageSize
+	if err := query.
+		Preload("Category").
+		Preload("Tags").
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&articles).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return articles, total, nil
+}
+
+// SetPublic 设置文章对未登录用户的可见性
+func (s *ArticleService) SetPublic(id uint, isPublic bool) error {
+	return s.DB.Model(&model.Article{}).
+		Where("id = ?", id).
+		UpdateColumn("is_public", isPublic).Error
+}
+
+// GetAdminList 获取所有文章列表（管理端，不区分是否公开）
+func (s *ArticleService) GetAdminList(page, pageSize int, categoryID, tagID uint) ([]model.Article, int64, error) {
+	var articles []model.Article
+	var total int64
+
+	query := s.DB.Model(&model.Article{}).Where("is_published = ?", true)
+
+	if categoryID > 0 {
+		query = query.Where("category_id = ?", categoryID)
+	}
+
+	if tagID > 0 {
+		query = query.Joins("JOIN article_tags ON article_tags.article_id = articles.id").
+			Where("article_tags.tag_id = ?", tagID)
+	}
 
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err

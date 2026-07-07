@@ -32,6 +32,7 @@ type Article struct {
 	CategoryID  uint      `gorm:"index" json:"category_id"`                      // 所属分类ID，建索引
 	ViewCount   int       `gorm:"default:0" json:"view_count"`                   // 阅读量
 	IsPublished bool      `gorm:"default:false;index" json:"is_published"`       // 是否已发布
+	IsPublic    bool      `gorm:"default:false;index" json:"is_public"`          // 是否对未登录用户可见
 	Language    string    `gorm:"type:varchar(10);default:'zh'" json:"language"` // 语言: zh=中文, en=英文, both=双语
 	CreatedAt   time.Time `json:"created_at"`                                    // 创建时间（GORM自动管理）
 	UpdatedAt   time.Time `json:"updated_at"`                                    // 更新时间（GORM自动管理）

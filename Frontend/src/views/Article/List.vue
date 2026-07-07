@@ -61,6 +61,17 @@
               </el-tag>
               <span>{{ $t('common.viewCount') }}: {{ article.view_count }}</span>
               <span>{{ $t('common.publishedAt') }} {{ formatDate(article.created_at) }}</span>
+              <!-- 登录后可见性管理 -->
+              <el-switch
+                v-if="authStore.isLoggedIn"
+                :model-value="article.is_public"
+                size="small"
+                active-text="公开"
+                inactive-text="隐藏"
+                inline-prompt
+                @click.stop
+                @change="(val: boolean) => handleToggleVisibility(article, val)"
+              />
             </div>
           </div>
         </div>
@@ -90,11 +101,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search as SearchIcon } from '@element-plus/icons-vue'
-import { getArticles, searchArticles } from '@/api/modules/article'
+import { ElMessage } from 'element-plus'
+import { getArticles, getAdminArticles, searchArticles, setArticleVisibility } from '@/api/modules/article'
+import { useAuthStore } from '@/stores/auth'
 import { getArticleUrl } from '@/utils'
 import type { Article } from '@/types'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // ============================================================
 // 响应式数据
@@ -128,9 +142,10 @@ onMounted(() => {
 async function fetchArticles(): Promise<void> {
   loading.value = true
   try {
+    const fetcher = authStore.isLoggedIn ? getAdminArticles : getArticles
     const { data } = keyword.value
       ? await searchArticles({ keyword: keyword.value, page: currentPage.value, page_size: pageSize.value })
-      : await getArticles({ page: currentPage.value, page_size: pageSize.value })
+      : await fetcher({ page: currentPage.value, page_size: pageSize.value })
 
     if (data.data) {
       articles.value = data.data.list || []
@@ -140,6 +155,17 @@ async function fetchArticles(): Promise<void> {
     console.error('获取文章列表失败:', error)
   } finally {
     loading.value = false  // finally 块无论成功失败都会执行
+  }
+}
+
+/** 切换文章可见性 */
+async function handleToggleVisibility(article: Article, isPublic: boolean): Promise<void> {
+  try {
+    await setArticleVisibility(article.id, isPublic)
+    article.is_public = isPublic
+    ElMessage.success(isPublic ? '已设为公开' : '已设为隐藏')
+  } catch {
+    ElMessage.error('操作失败')
   }
 }
 

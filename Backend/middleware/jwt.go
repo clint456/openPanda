@@ -103,3 +103,37 @@ func GetCurrentUserID(c *gin.Context) (uint, bool) {
 	id, ok := userID.(uint)
 	return id, ok
 }
+
+// TryGetUserID 尝试从请求头解析JWT获取用户ID（不中断请求）
+// 用于公开接口中可选的身份识别：有Token则识别用户，没有则当作游客
+func TryGetUserID(c *gin.Context) (uint, bool) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		return 0, false
+	}
+
+	parts := strings.SplitN(authHeader, " ", 2)
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return 0, false
+	}
+
+	cfg := config.LoadConfig()
+	token, err := jwt.Parse(parts[1], func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return []byte(cfg.JWT.Secret), nil
+	})
+
+	if err != nil || !token.Valid {
+		return 0, false
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return 0, false
+	}
+
+	userID := uint(claims["user_id"].(float64))
+	return userID, true
+}

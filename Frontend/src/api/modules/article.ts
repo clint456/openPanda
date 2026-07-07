@@ -98,6 +98,22 @@ export function deleteArticle(id: number) {
   return http.delete<ApiResponse<null>>(`/admin/articles/${id}`)
 }
 
+/**
+ * 管理端获取文章列表（含非公开文章，需登录）
+ */
+export function getAdminArticles(params: ArticleListParams = {}) {
+  return http.get<ApiResponse<PaginatedData<Article>>>('/admin/articles', { params })
+}
+
+/**
+ * 设置文章对未登录用户的可见性
+ * @param id 文章ID
+ * @param isPublic 是否公开
+ */
+export function setArticleVisibility(id: number, isPublic: boolean) {
+  return http.put<ApiResponse<null>>(`/admin/articles/${id}/visibility`, { is_public: isPublic })
+}
+
 // ============================================================
 // 分类接口
 // ============================================================
