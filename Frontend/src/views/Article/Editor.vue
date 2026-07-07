@@ -73,14 +73,24 @@
         toolbars: 工具栏按钮配置
       ============================================================ -->
       <el-form-item label="正文" prop="content">
-        <div class="editor-wrapper">
+        <!-- 网页全屏切换按钮 -->
+        <el-button
+          text
+          :icon="FullScreenIcon"
+          :type="isWebFullscreen ? 'warning' : 'default'"
+          @click="toggleWebFullscreen"
+          class="web-fullscreen-toggle"
+        >
+          {{ isWebFullscreen ? '退出网页全屏' : '网页全屏' }}
+        </el-button>
+        <div :class="['editor-wrapper', { 'web-fullscreen': isWebFullscreen }]">
           <MdEditor
             v-model="form.content"
             :language="editorLang"
             :toolbars="toolbars"
             :preview-theme="'github'"
             :on-upload-img="handleUploadImage"
-            style="height: 500px"
+            :style="{ height: isWebFullscreen ? 'calc(100vh - 60px)' : '500px' }"
             placeholder="开始撰写你的技术文章...&#10;&#10;支持 Markdown 语法：&#10;- # 标题&#10;- **加粗**&#10;- `代码`&#10;- ```代码块```&#10;- 粘贴或拖入图片自动上传"
           />
         </div>
@@ -99,10 +109,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { ArrowLeft as ArrowLeftIcon } from '@element-plus/icons-vue'
+import { ArrowLeft as ArrowLeftIcon, FullScreen as FullScreenIcon } from '@element-plus/icons-vue'
 // md-editor-v3: Vue3 专用 Markdown 编辑器（默认导出）
 import MdEditor from 'md-editor-v3'
 import type { ToolbarNames } from 'md-editor-v3'
@@ -111,6 +121,7 @@ import 'md-editor-v3/lib/style.css'
 import { getCategories, createArticle, updateArticle, getArticleById } from '@/api/modules/article'
 import { uploadImage } from '@/api/modules/upload'
 import { useAppStore } from '@/stores/app'
+import { parseArticleId } from '@/utils'
 import type { Category, ArticleFormData } from '@/types'
 
 const route = useRoute()
@@ -121,10 +132,12 @@ const appStore = useAppStore()
 // 判断是编辑模式还是新建模式
 // ============================================================
 
-/** 是否是编辑模式（URL 带 :id 参数则为编辑） */
-const isEdit = computed<boolean>(() => !!route.params.id)
-/** 编辑模式下的文章ID（新建时不需要） */
-const editId = computed<number>(() => (isEdit.value ? Number(route.params.id) : 0))
+/** 从路由 slug 参数提取文章数字 ID（URL 格式: /articles/:slug/edit，如 /articles/123-my-title/edit） */
+const slugParam = computed<string>(() => (route.params.slug as string) || '')
+/** 编辑模式下的文章ID（新建时为 0） */
+const editId = computed<number>(() => parseArticleId(slugParam.value))
+/** 是否是编辑模式（能提取到有效 ID 则为编辑） */
+const isEdit = computed<boolean>(() => editId.value > 0)
 
 // ============================================================
 // 表单数据
@@ -164,13 +177,31 @@ const rules: FormRules = {
 const categories = ref<Category[]>([])
 const submitting = ref<boolean>(false)
 
-/** Markdown 编辑器工具栏配置 */
+/** Markdown 编辑器工具栏配置（移除内置 fullscreen，改用自定义网页全屏） */
 const toolbars: ToolbarNames[] = [
   'bold', 'italic', 'strikethrough', 'title', '-',
   'unorderedList', 'orderedList', 'task', '-',
   'code', 'codeRow', 'quote', 'link', 'image', 'table', '-',
-  'preview', 'fullscreen', 'catalog',
+  'preview', 'catalog',
 ]
+
+/** 网页全屏状态 */
+const isWebFullscreen = ref<boolean>(false)
+
+/** 切换网页全屏 */
+function toggleWebFullscreen(): void {
+  isWebFullscreen.value = !isWebFullscreen.value
+  // 网页全屏时禁止 body 滚动
+  document.body.style.overflow = isWebFullscreen.value ? 'hidden' : ''
+}
+
+/** 按 Escape 键退出网页全屏 */
+function handleKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Escape' && isWebFullscreen.value) {
+    isWebFullscreen.value = false
+    document.body.style.overflow = ''
+  }
+}
 
 /** 编辑器界面语言（跟随全局语言设置） */
 const editorLang = computed<string>(() => (appStore.locale === 'zh-CN' ? 'zh-CN' : 'en-US'))
@@ -185,6 +216,15 @@ onMounted(async () => {
   if (isEdit.value && editId.value > 0) {
     await loadArticle(editId.value)
   }
+
+  // 监听 Escape 键退出网页全屏
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onBeforeUnmount(() => {
+  // 组件卸载时恢复 body 滚动
+  document.body.style.overflow = ''
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 // ============================================================
@@ -321,6 +361,26 @@ async function handleUploadImage(
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   overflow: hidden;
+}
+
+/* 网页全屏切换按钮 */
+.web-fullscreen-toggle {
+  margin-bottom: 8px;
+}
+
+/* ============================================================
+网页全屏模式：编辑器撑满浏览器视口（不是系统全屏）
+============================================================ */
+.editor-wrapper.web-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border: none;
+  border-radius: 0;
+  background: #fff;
 }
 
 /* 响应式 */

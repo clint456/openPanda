@@ -49,7 +49,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 
 	// 校验管理员凭据（从环境变量 ADMIN_USERNAME / ADMIN_PASSWORD 读取）
 	adminUser := config.GetEnv("ADMIN_USERNAME", "admin")
-	adminPass := config.GetEnv("ADMIN_PASSWORD", "")
+	adminPass := config.GetEnv("ADMIN_PASSWORD", "admin123")
 
 	if req.Username != adminUser || req.Password != adminPass {
 		utils.Unauthorized(c, "用户名或密码错误")

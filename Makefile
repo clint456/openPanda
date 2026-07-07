@@ -28,24 +28,24 @@ build-local:
 	cd Backend && go build -o server.exe main.go
 
 # ---------- Docker ----------
-docker: build
+docker: 
 	docker build -t clintonluo/openpanda-backend:latest ./Backend
 	docker build -t clintonluo/openpanda-frontend:latest ./Frontend
 
-docker-backend: build
+docker-backend:
 	docker build -t clintonluo/openpanda-backend:latest ./Backend
 
 docker-frontend:
 	docker build -t clintonluo/openpanda-frontend:latest ./Frontend
 
 up:
-	docker-compose up -d
+	docker-compose -f deploy/docker-compose.yml up -d
 
 down:
-	docker-compose down
+	docker-compose -f deploy/docker-compose.yml down
 
 logs:
-	docker-compose logs -f
+	docker-compose -f deploy/docker-compose.yml logs -f
 
 # ---------- 发布 ----------
 push:

@@ -72,10 +72,9 @@ npm run docker:release            # 一键构建 + 推送
 npm run docker:release
 
   ├── npm run docker:build:backend
-  │   ├── npm run build:backend       ← 交叉编译 Linux 二进制
-  │   │   CGO_ENABLED=0 GOOS=linux go build → Backend/server
   │   └── docker build -t clintonluo/openpanda-backend ./Backend
-  │       └── COPY server → alpine → 最终镜像 ~15MB
+  │       ├── Stage1: golang:1.21-alpine → go build（自动交叉编译 Linux 二进制）
+  │       └── Stage2: alpine → 复制二进制 → 最终镜像 ~15MB
   │
   ├── npm run docker:build:frontend
   │   ├── npm run build:frontend      ← vite build → dist/
@@ -90,11 +89,14 @@ npm run docker:release
 
 ## 两个 Compose 文件的区别
 
-| | `docker-compose.yml` | `docker-compose.prod.yml` |
+| | `deploy/docker-compose.yml` | `deploy/docker-compose.prod.yml` |
 |---|---|---|
 | **用途** | 本地开发调试 | 服务器生产部署 |
-| **后端** | `build: ./Backend` 从源码编译 Go 并打包 | `image: clintonluo/openpanda-backend` 拉 DockerHub 成品 |
-| **前端** | `build: ./Frontend` 从源码 npm build 并打包 | `image: clintonluo/openpanda-frontend` 拉 DockerHub 成品 |
+| **后端** | `build: ../Backend` 从源码编译 Go 并打包 | `image: clintonluo/openpanda-backend` 拉 DockerHub 成品 |
+| **前端** | `build: ../Frontend` 从源码 npm build 并打包 | `image: clintonluo/openpanda-frontend` 拉 DockerHub 成品 |
+| **Nginx 配置** | `nginx.dev.conf`（纯 HTTP，volume 挂载覆盖） | `nginx.conf`（HTTPS + http2 + SSL） |
+| **SSL 证书** | 不需要 | 需要挂载到 `/data/openpanda/ssl/` |
+| **端口映射** | `80:80` | `80:80` + `443:443` |
 | **需要环境** | Go + Node.js + npm | 仅 Docker |
 | **启动速度** | 慢（每次编译） | 快（直接拉镜像） |
 
@@ -104,17 +106,17 @@ npm run docker:release
 
 ```bash
 # 1. 在服务器上创建持久化目录
-mkdir -p /data/openpanda/{pgdata,uploads,backups}
+mkdir -p /data/openpanda/{pgdata,uploads,backups,redis,ssl}
 
 # 2. 将部署文件传到服务器
-scp docker-compose.prod.yml user@server:/opt/openpanda/
+scp -r deploy/ user@server:/opt/openpanda/
 
 # 3. SSH 到服务器
 ssh user@server
 cd /opt/openpanda
 
 # 4. 启动
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 > 所有数据存储在宿主机 `/data/openpanda/` 下，容器删除或软件更新都不会丢失。
@@ -123,8 +125,8 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ```bash
 cd /opt/openpanda
-docker-compose -f docker-compose.prod.yml pull
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ### 数据备份
@@ -151,6 +153,17 @@ rsync -av /data/openpanda/uploads/ user@backup-server:/backups/openpanda-uploads
 
 ### 端口说明
 
+**开发环境（deploy/docker-compose.yml，纯 HTTP）：**
+
+| 服务 | 端口 | 用途 |
+|------|------|------|
+| Nginx (Frontend) | 80 | HTTP 用户访问入口 |
+| Gin (Backend) | 8080 | REST API |
+| PostgreSQL | 5432 | 数据库 |
+| Redis | 6379 | 缓存 |
+
+**生产环境（deploy/docker-compose.prod.yml，HTTPS）：**
+
 | 服务 | 端口 | 用途 |
 |------|------|------|
 | Nginx (Frontend) | 80 | HTTP（自动跳转 HTTPS） |
@@ -163,13 +176,15 @@ rsync -av /data/openpanda/uploads/ user@backup-server:/backups/openpanda-uploads
 
 ### 配置文件说明
 
-涉及 SSL 的配置分布在三个文件中：
+涉及 nginx 的配置分布在以下文件中：
 
-| 文件 | 作用 |
-|------|------|
-| `Frontend/nginx.conf` | Nginx HTTPS server 块、SSL 证书路径、HTTP→HTTPS 跳转 |
-| `Frontend/Dockerfile` | 创建 `/etc/nginx/ssl` 目录、暴露 443 端口 |
-| `docker-compose.prod.yml` | 挂载证书目录到容器、映射 443 端口 |
+| 文件 | 环境 | 作用 |
+|------|------|------|
+| `Frontend/nginx.conf` | 生产 | HTTPS server 块、SSL 证书路径、HTTP→HTTPS 跳转、http2 |
+| `Frontend/nginx.dev.conf` | 开发 | HTTP-only server 块，无 SSL，无跳转 |
+| `Frontend/Dockerfile` | 通用 | 默认使用 `nginx.conf`，创建 `/etc/nginx/ssl` 目录 |
+| `deploy/docker-compose.yml` | 开发 | 通过 volume 挂载 `nginx.dev.conf` 覆盖默认 HTTPS 配置 |
+| `deploy/docker-compose.prod.yml` | 生产 | 挂载 SSL 证书目录、映射 80+443 端口，使用默认 `nginx.conf` |
 
 ### 1. 上传证书到服务器
 
@@ -203,10 +218,10 @@ npm run docker:release
 cd /opt/openpanda
 
 # 拉取最新前端镜像
-docker-compose -f docker-compose.prod.yml pull frontend
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull frontend
 
 # 重启前端容器（会加载 SSL 证书）
-docker-compose -f docker-compose.prod.yml up -d frontend
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d frontend
 ```
 
 ### 4. 验证

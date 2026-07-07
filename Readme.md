@@ -43,7 +43,7 @@ cd Frontend && npm install && npm run dev
 npm run docker:release
 
 # 服务器上启动
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ---
@@ -96,8 +96,13 @@ openpanda/
 │   ├── data-safety.md      # 数据安全与备份
 │   ├── backend-api.md      # 后端 API 文档
 │   └── frontend-api.md     # 前端模块文档
-├── docker-compose.yml          # 本地开发编排
-├── docker-compose.prod.yml     # 生产部署编排
+├── deploy/                    # Docker 部署配置
+│   ├── docker-compose.yml         # 本地开发编排
+│   ├── docker-compose.prod.yml    # 生产部署编排
+│   └── .env.prod.example          # 生产环境变量模板
+├── scripts/                   # 运维脚本
+│   ├── deploy.sh                  # 服务器运维
+│   └── gen-jwt-secret.js          # JWT 密钥生成
 └── package.json                # npm 命令
 ```
 

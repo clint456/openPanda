@@ -36,7 +36,7 @@ mkdir -p /data/openpanda/{pgdata,uploads,backups}
 
 # 2. 启动
 cd /opt/openpanda
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 ```
 
 ## 软件更新流程
@@ -45,10 +45,10 @@ docker-compose -f docker-compose.prod.yml up -d
 cd /opt/openpanda
 
 # 拉取新镜像（不影响数据）
-docker-compose -f docker-compose.prod.yml pull
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml pull
 
 # 重建容器（volume 数据保留）
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 
 # 确认数据完好
 ls /data/openpanda/pgdata/
@@ -102,12 +102,12 @@ ls /data/openpanda/
 # 2. 安装 Docker
 curl -fsSL https://get.docker.com | sh
 
-# 3. 拿到 docker-compose.prod.yml
-scp docker-compose.prod.yml root@server:/opt/openpanda/
+# 3. 拿到部署文件
+scp -r deploy/ root@server:/opt/openpanda/
 cd /opt/openpanda
 
 # 4. 启动全部服务
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -p openpanda -f deploy/docker-compose.prod.yml up -d
 
 # 5. 如需恢复数据库
 docker exec -i openpanda-db psql -U postgres openpanda \
@@ -121,5 +121,5 @@ docker exec -i openpanda-db psql -U postgres openpanda \
 | `/data` 挂载独立数据盘 | 系统盘损坏不影响数据 |
 | 每日自动备份 | crontab + pg_dump |
 | 备份异地存储 | rsync 到另一台机器/云存储 |
-| JWT_SECRET 更换 | 修改 `docker-compose.prod.yml` 中 JWT_SECRET |
+| JWT_SECRET 更换 | 修改 `.env` 中 JWT_SECRET（或 deploy/docker-compose.prod.yml） |
 | DB_PASSWORD 更换 | 生产环境务必改掉默认 `postgres` |

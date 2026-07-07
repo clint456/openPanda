@@ -7,10 +7,6 @@
 // ============================================================
 package config
 
-import (
-	"os"
-)
-
 // Config 全局配置结构体
 // 拓展方式：直接在结构体中新增字段，例如：
 //
@@ -60,34 +56,26 @@ type JWTConfig struct {
 func LoadConfig() *Config {
 	return &Config{
 		Server: ServerConfig{
-			Port: getEnv("SERVER_PORT", "8080"),
-			Mode: getEnv("GIN_MODE", "debug"),
+			Port: GetEnv("SERVER_PORT", "8080"),
+			Mode: GetEnv("GIN_MODE", "debug"),
 		},
 		Database: DatabaseConfig{
-			Host:     getEnv("DB_HOST", "localhost"),
-			Port:     getEnv("DB_PORT", "5432"),
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", "postgres"),
-			DBName:   getEnv("DB_NAME", "openpanda"),
-			SSLMode:  getEnv("DB_SSLMODE", "disable"),
-			TimeZone: getEnv("DB_TIMEZONE", "Asia/Shanghai"),
+			Host:     GetEnv("DB_HOST", "localhost"),
+			Port:     GetEnv("DB_PORT", "5432"),
+			User:     GetEnv("DB_USER", "postgres"),
+			Password: GetEnv("DB_PASSWORD", "postgres"),
+			DBName:   GetEnv("DB_NAME", "openpanda"),
+			SSLMode:  GetEnv("DB_SSLMODE", "disable"),
+			TimeZone: GetEnv("DB_TIMEZONE", "Asia/Shanghai"),
 		},
 		Redis: RedisConfig{
-			Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
-			Password: getEnv("REDIS_PASSWORD", ""),
+			Addr:     GetEnv("REDIS_ADDR", "localhost:6379"),
+			Password: GetEnv("REDIS_PASSWORD", ""),
 			DB:       0,
 		},
 		JWT: JWTConfig{
-			Secret:     getEnv("JWT_SECRET", "openpanda-dev-secret-change-in-production"),
+			Secret:     GetEnv("JWT_SECRET", "openpanda-dev-secret-change-in-production"),
 			ExpireHour: 24, // 默认24小时过期
 		},
 	}
-}
-
-// getEnv 辅助函数：获取环境变量，不存在则返回默认值
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
 }
