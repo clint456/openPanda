@@ -2,13 +2,13 @@
 # docker-compose.prod.yml — 生产环境
 #
 # 服务器首次部署:
-#   export DOCKERHUB_USER=clintonluo
+#   export REGISTRY=crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo
 #   mkdir -p /data/openpanda/{pgdata,uploads,backups,redis,ssl}
-#   docker-compose -f docker-compose.prod.yml up -d
+#   docker compose -f deploy/docker-compose.prod.yml up -d
 #
 # 后续更新:
-#   docker-compose -f docker-compose.prod.yml pull backend frontend
-#   docker-compose -f docker-compose.prod.yml up -d --no-deps backend frontend
+#   docker compose -f deploy/docker-compose.prod.yml pull backend frontend
+#   docker compose -f deploy/docker-compose.prod.yml up -d --no-deps backend frontend
 #
 # 数据全部存储在宿主机 /data/openpanda/ 下，
 # 不受容器删除/重建/软件更新影响。
@@ -48,7 +48,7 @@ services:
       retries: 5
 
   backend:
-    image: ${DOCKERHUB_USER:-clintonluo}/openpanda-backend:latest
+    image: ${REGISTRY:-crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo}/openpanda-backend:latest
     container_name: openpanda-backend
     restart: always
     ports:
@@ -78,7 +78,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ${DOCKERHUB_USER:-clintonluo}/openpanda-frontend:latest
+    image: ${REGISTRY:-crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo}/openpanda-frontend:latest
     container_name: openpanda-frontend
     restart: always
     ports:
@@ -86,6 +86,8 @@ services:
       - '443:443'
     volumes:
       - /data/openpanda/ssl:/etc/nginx/ssl:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - backend
 

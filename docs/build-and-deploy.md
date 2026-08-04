@@ -72,19 +72,19 @@ npm run docker:release            # 一键构建 + 推送
 npm run docker:release
 
   ├── npm run docker:build:backend
-  │   └── docker build -t clintonluo/openpanda-backend ./Backend
+  │   └── docker build -t crpi-xxx.../openpanda-backend ./Backend
   │       ├── Stage1: golang:1.21-alpine → go build（自动交叉编译 Linux 二进制）
   │       └── Stage2: alpine → 复制二进制 → 最终镜像 ~15MB
   │
   ├── npm run docker:build:frontend
   │   ├── npm run build:frontend      ← vite build → dist/
-  │   └── docker build -t clintonluo/openpanda-frontend ./Frontend
+  │   └── docker build -t crpi-xxx.../openpanda-frontend ./Frontend
   │       ├── Stage1: node → npm install → vite build
   │       └── Stage2: nginx + dist/ + nginx.conf
   │
   └── npm run docker:push
-      ├── docker push clintonluo/openpanda-backend
-      └── docker push clintonluo/openpanda-frontend
+      ├── docker push crpi-xxx.../openpanda-backend
+      └── docker push crpi-xxx.../openpanda-frontend
 ```
 
 ## 两个 Compose 文件的区别
@@ -92,8 +92,8 @@ npm run docker:release
 | | `deploy/docker-compose.yml` | `deploy/docker-compose.prod.yml` |
 |---|---|---|
 | **用途** | 本地开发调试 | 服务器生产部署 |
-| **后端** | `build: ../Backend` 从源码编译 Go 并打包 | `image: clintonluo/openpanda-backend` 拉 DockerHub 成品 |
-| **前端** | `build: ../Frontend` 从源码 npm build 并打包 | `image: clintonluo/openpanda-frontend` 拉 DockerHub 成品 |
+| **后端** | `build: ../Backend` 从源码编译 Go 并打包 | `image: ${REGISTRY}/openpanda-backend` 拉阿里云容器镜像 |
+| **前端** | `build: ../Frontend` 从源码 npm build 并打包 | `image: ${REGISTRY}/openpanda-frontend` 拉阿里云容器镜像 |
 | **Nginx 配置** | `nginx.dev.conf`（纯 HTTP，volume 挂载覆盖） | `nginx.conf`（HTTPS + http2 + SSL） |
 | **SSL 证书** | 不需要 | 需要挂载到 `/data/openpanda/ssl/` |
 | **端口映射** | `80:80` | `80:80` + `443:443` |

@@ -29,14 +29,14 @@ build-local:
 
 # ---------- Docker ----------
 docker: 
-	docker build -t clintonluo/openpanda-backend:latest ./Backend
-	docker build -t clintonluo/openpanda-frontend:latest ./Frontend
+	docker build -t crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-backend:latest ./Backend
+	docker build -t crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-frontend:latest ./Frontend
 
 docker-backend:
-	docker build -t clintonluo/openpanda-backend:latest ./Backend
+	docker build -t crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-backend:latest ./Backend
 
 docker-frontend:
-	docker build -t clintonluo/openpanda-frontend:latest ./Frontend
+	docker build -t crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-frontend:latest ./Frontend
 
 up:
 	docker-compose -f deploy/docker-compose.yml up -d
@@ -49,8 +49,8 @@ logs:
 
 # ---------- 发布 ----------
 push:
-	docker push clintonluo/openpanda-backend:latest
-	docker push clintonluo/openpanda-frontend:latest
+	docker push crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-backend:latest
+	docker push crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com/clintonluo/openpanda-frontend:latest
 
 release: docker push
 
@@ -58,3 +58,6 @@ release: docker push
 clean:
 	rm -f Backend/server Backend/server.exe
 	rm -rf Frontend/dist
+
+upto-server:
+	scp -r deploy/* root@139.224.197.152:/root/openPanda

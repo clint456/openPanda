@@ -13,6 +13,7 @@ export default {
     articles: '技术文章',
     categories: '技术专栏',
     about: '关于作者',
+    tools: '工具库',
     search: '搜索',
     loading: '加载中...',
     noData: '暂无数据',
@@ -164,6 +165,15 @@ export default {
       '2025 年度"优秀新员工"（四川汇源光通信）',
     ],
     footer: '持续学习，实践探索，知识分享。',
+  },
+
+  // --- 工具库 ---
+  tools: {
+    title: '工具库',
+    subtitle: '精选实用开发工具，助力高效编程',
+    backToList: '返回工具列表',
+    empty: '暂无可用工具',
+    notFound: '未找到该工具',
   },
 
   // --- 页脚 ---

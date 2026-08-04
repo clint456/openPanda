@@ -99,6 +99,8 @@ services:
     volumes:
       # 开发环境使用 HTTP-only 配置覆盖默认 HTTPS 配置
       - ../Frontend/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - backend
 

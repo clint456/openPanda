@@ -11,6 +11,7 @@ export default {
     articles: 'Articles',
     categories: 'Categories',
     about: 'About',
+    tools: 'Tools',
     search: 'Search',
     loading: 'Loading...',
     noData: 'No data',
@@ -163,6 +164,15 @@ export default {
       '2025 "Outstanding New Employee" (Sichuan Huiyuan Optical Communications)',
     ],
     footer: 'Keep learning. Build things. Share knowledge.',
+  },
+
+  // --- Tools ---
+  tools: {
+    title: 'Tools',
+    subtitle: 'Handy dev tools for efficient coding',
+    backToList: 'Back to Tools',
+    empty: 'No tools available',
+    notFound: 'Tool not found',
   },
 
   // --- Footer ---

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考研单词默写 - Recite</title>
+<style>
+  :root {
+    --bg: #323437;
+    --bg-alt: #2c2e31;
+    --main: #e2b714;
+    --text: #d1d0c5;
+    --sub: #646669;
+    --error: #ca4754;
+    --success: #6b9b6e;
+    --roundness: 0.5rem;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  /* --- Top Bar --- */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--sub);
+    margin-bottom: 24px;
+  }
+  .top-bar select, .top-bar button {
+    background: var(--bg-alt);
+    color: var(--text);
+    border: 1px solid var(--sub);
+    border-radius: var(--roundness);
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .top-bar select:hover, .top-bar button:hover {
+    border-color: var(--main);
+    color: var(--main);
+  }
+  .top-bar button.active {
+    background: var(--main);
+    color: var(--bg);
+    border-color: var(--main);
+  }
+  .spacer { flex: 1; }
+
+  /* --- Stats --- */
+  .stats {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-bottom: 24px;
+    font-size: 14px;
+    color: var(--sub);
+  }
+  .stats span { color: var(--main); font-weight: 700; }
+
+  /* --- Card --- */
+  .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 48px 24px;
+  }
+  .hint-section {
+    text-align: center;
+  }
+  .translation {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--main);
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .phonetic {
+    font-size: 18px;
+    color: var(--sub);
+    font-style: italic;
+  }
+  .progress-text {
+    font-size: 14px;
+    color: var(--sub);
+    margin-top: 8px;
+  }
+
+  /* --- Input --- */
+  .input-wrapper {
+    width: 100%;
+    max-width: 420px;
+  }
+  .recite-input {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 22px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    background: var(--bg-alt);
+    color: var(--text);
+    border: 2px solid var(--sub);
+    border-radius: var(--roundness);
+    outline: none;
+    text-align: center;
+    letter-spacing: 2px;
+    transition: border-color 0.15s;
+  }
+  .recite-input:focus {
+    border-color: var(--main);
+  }
+  .recite-input.correct-flash {
+    border-color: var(--success);
+    background: rgba(107, 155, 110, 0.15);
+  }
+  .recite-input.wrong-flash {
+    border-color: var(--error);
+    background: rgba(202, 71, 84, 0.15);
+  }
+
+  /* --- Result --- */
+  .result {
+    font-size: 20px;
+    font-weight: 600;
+    min-height: 32px;
+    text-align: center;
+  }
+  .result.correct { color: var(--success); }
+  .result.wrong { color: var(--error); }
+  .correct-answer {
+    font-size: 16px;
+    color: var(--main);
+    margin-top: 4px;
+  }
+
+  /* --- Keyboard hint --- */
+  .key-hint {
+    font-size: 13px;
+    color: var(--sub);
+    text-align: center;
+  }
+
+  /* --- Complete --- */
+  .complete {
+    text-align: center;
+    padding: 60px 24px;
+  }
+  .complete h2 { color: var(--success); font-size: 28px; margin-bottom: 16px; }
+  .complete p { color: var(--sub); margin-bottom: 24px; }
+  .complete button {
+    background: var(--main);
+    color: var(--bg);
+    border: none;
+    padding: 12px 32px;
+    border-radius: var(--roundness);
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .complete button:hover { opacity: 0.85; }
+
+  /* --- Loading --- */
+  .loading {
+    color: var(--sub);
+    font-size: 18px;
+    text-align: center;
+    padding: 60px 0;
+  }
+
+  @media (max-width: 480px) {
+    .translation { font-size: 26px; }
+    .recite-input { font-size: 18px; padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <!-- Top controls -->
+  <div class="top-bar">
+    <select id="listSelect">
+      <option value="kaoyan5500">考研英语5500词</option>
+    </select>
+    <button id="btnShuffle" class="active" title="乱序刷题">🔀 乱序</button>
+    <button id="btnMistake" title="仅练习错题">📝 错题</button>
+    <span class="spacer"></span>
+    <button id="btnSpeak" title="朗读发音">🔊</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div>✅ <span id="statCorrect">0</span></div>
+    <div>❌ <span id="statWrong">0</span></div>
+    <div>📊 <span id="statRemain">0</span></div>
+  </div>
+
+  <!-- Main card -->
+  <div class="card" id="cardArea">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 考研单词默写 - 独立单页应用
+// ============================================================
+
+const LS_PREFIX = 'recite_';
+
+// --- State ---
+let state = {
+  words: [],          // 当前词库全部单词
+  queue: [],          // 待答队列（可能乱序/筛错题）
+  cursor: 0,          // 当前队列索引
+  correctCount: 0,
+  wrongCount: 0,
+  shuffle: true,
+  onlyMistake: false,
+  currentList: 'kaoyan5500',
+  resultVisible: false,
+};
+
+// --- DOM refs ---
+const $ = (id) => document.getElementById(id);
+const cardArea = $('cardArea');
+const listSelect = $('listSelect');
+const btnShuffle = $('btnShuffle');
+const btnMistake = $('btnMistake');
+const btnSpeak = $('btnSpeak');
+
+// --- localStorage helpers ---
+function getMistakes(listName) {
+  try {
+    return JSON.parse(localStorage.getItem(LS_PREFIX + 'mistakes_' + listName) || '{}');
+  } catch { return {}; }
+}
+function setMistakes(listName, data) {
+  localStorage.setItem(LS_PREFIX + 'mistakes_' + listName, JSON.stringify(data));
+}
+function getProgress(listName) {
+  try {
+    return JSON.parse(localStorage.getItem(LS_PREFIX + 'progress_' + listName) || '[]');
+  } catch { return []; }
+}
+function setProgress(listName, data) {
+  localStorage.setItem(LS_PREFIX + 'progress_' + listName, JSON.stringify(data));
+}
+
+// --- Load word list ---
+async function loadList(listName) {
+  const res = await fetch(`/tool/lists/${listName}.json`);
+  if (!res.ok) throw new Error(`词库加载失败: ${res.status}`);
+  return await res.json();
+}
+
+// --- Build queue ---
+function buildQueue() {
+  let base = [...state.words];
+
+  if (state.shuffle) {
+    // Fisher-Yates shuffle
+    for (let i = base.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [base[i], base[j]] = [base[j], base[i]];
+    }
+  }
+
+  if (state.onlyMistake) {
+    const mistakes = getMistakes(state.currentList);
+    base = base.filter(w => mistakes[w.word]);
+    if (base.length === 0) {
+      alert('没有错题记录，请先正常刷题积累错题！');
+      state.onlyMistake = false;
+      btnMistake.classList.remove('active');
+      return buildQueue();
+    }
+  }
+
+  state.queue = base;
+  state.cursor = 0;
+  state.correctCount = 0;
+  state.wrongCount = 0;
+  state.resultVisible = false;
+}
+
+// --- Render ---
+function renderStats() {
+  $('statCorrect').textContent = state.correctCount;
+  $('statWrong').textContent = state.wrongCount;
+  $('statRemain').textContent = state.queue.length - state.cursor;
+}
+
+function renderCard() {
+  if (state.cursor >= state.queue.length) {
+    cardArea.innerHTML = `
+      <div class="complete">
+        <h2>🎉 本轮完成！</h2>
+        <p>正确 ${state.correctCount} 个 | 错误 ${state.wrongCount} 个</p>
+        <p>正确率: ${state.queue.length > 0 ? Math.round(state.correctCount / state.queue.length * 100) : 0}%</p>
+        <button onclick="restart()">再来一轮</button>
+      </div>`;
+    return;
+  }
+
+  const item = state.queue[state.cursor];
+  cardArea.innerHTML = `
+    <div class="hint-section">
+      <div class="translation">${escapeHtml(item.translation)}</div>
+      ${item.phonetic ? `<div class="phonetic">${escapeHtml(item.phonetic)}</div>` : ''}
+      <div class="progress-text">第 ${state.cursor + 1} / ${state.queue.length} 个</div>
+    </div>
+    <div class="input-wrapper">
+      <input
+        type="text"
+        class="recite-input"
+        id="wordInput"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="输入英文单词..."
+        autofocus
+      />
+    </div>
+    <div class="result" id="resultArea"></div>
+    <div class="key-hint">按 <b>Enter</b> 提交 · 按 <b>Ctrl+Enter</b> 跳过</div>
+  `;
+
+  const input = $('wordInput');
+  if (input) {
+    input.focus();
+    input.addEventListener('keydown', handleKeydown);
+  }
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// --- Handle submit ---
+function handleKeydown(e) {
+  if (state.resultVisible) return;
+
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      // Skip
+      state.cursor++;
+      renderStats();
+      renderCard();
+      return;
+    }
+    submitAnswer();
+  }
+}
+
+function submitAnswer() {
+  if (state.cursor >= state.queue.length) return;
+
+  const input = $('wordInput');
+  if (!input) return;
+  const userAnswer = input.value.trim();
+  if (!userAnswer) return;
+
+  const item = state.queue[state.cursor];
+  const correct = userAnswer.toLowerCase() === item.word.toLowerCase();
+  state.resultVisible = true;
+
+  // Flash input
+  input.classList.add(correct ? 'correct-flash' : 'wrong-flash');
+  input.disabled = true;
+
+  const resultArea = $('resultArea');
+  const mistakes = getMistakes(state.currentList);
+  const progress = getProgress(state.currentList);
+
+  if (correct) {
+    state.correctCount++;
+    resultArea.innerHTML = `<span class="correct">✅ 正确！</span>`;
+    // Remove from mistakes if it was there
+    if (mistakes[item.word]) {
+      delete mistakes[item.word];
+      setMistakes(state.currentList, mistakes);
+    }
+    // Add to progress
+    if (!progress.includes(item.word)) {
+      progress.push(item.word);
+      setProgress(state.currentList, progress);
+    }
+  } else {
+    state.wrongCount++;
+    resultArea.innerHTML = `
+      <span class="wrong">❌ 错误</span>
+      <div class="correct-answer">正确答案：<b>${escapeHtml(item.word)}</b></div>`;
+    // Add to mistakes
+    mistakes[item.word] = item;
+    setMistakes(state.currentList, mistakes);
+  }
+
+  renderStats();
+
+  // Auto advance after delay
+  setTimeout(() => {
+    state.cursor++;
+    state.resultVisible = false;
+    renderStats();
+    renderCard();
+  }, correct ? 800 : 1800);
+}
+
+// --- Speak ---
+function speak() {
+  if (state.cursor >= state.queue.length) return;
+  const item = state.queue[state.cursor];
+  if ('speechSynthesis' in window) {
+    const utter = new SpeechSynthesisUtterance(item.word);
+    utter.lang = 'en-US';
+    utter.rate = 0.85;
+    speechSynthesis.speak(utter);
+  }
+}
+
+// --- Restart ---
+function restart() {
+  buildQueue();
+  renderStats();
+  renderCard();
+}
+
+// --- Toggle buttons ---
+btnShuffle.addEventListener('click', () => {
+  state.shuffle = !state.shuffle;
+  btnShuffle.classList.toggle('active', state.shuffle);
+  buildQueue();
+  renderStats();
+  renderCard();
+});
+
+btnMistake.addEventListener('click', () => {
+  state.onlyMistake = !state.onlyMistake;
+  btnMistake.classList.toggle('active', state.onlyMistake);
+  buildQueue();
+  renderStats();
+  renderCard();
+});
+
+btnSpeak.addEventListener('click', speak);
+
+listSelect.addEventListener('change', async () => {
+  state.currentList = listSelect.value;
+  await initApp();
+});
+
+// --- Init ---
+async function initApp() {
+  cardArea.innerHTML = '<div class="loading">加载词库中...</div>';
+  try {
+    state.words = await loadList(state.currentList);
+    if (state.words.length === 0) {
+      cardArea.innerHTML = '<div class="loading">词库为空</div>';
+      return;
+    }
+    buildQueue();
+    renderStats();
+    renderCard();
+  } catch (err) {
+    cardArea.innerHTML = `<div class="loading">加载失败: ${err.message}</div>`;
+  }
+}
+
+// Start
+initApp();
+</script>
+</body>
+</html>
