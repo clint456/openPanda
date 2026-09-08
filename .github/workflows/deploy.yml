@@ -54,6 +54,24 @@ jobs:
         uses: actions/checkout@v4
 
       # ---------- 登录阿里云容器镜像仓库 ----------
+      - name: 检查镜像仓库登录凭证
+        shell: bash
+        env:
+          ALIYUN_USERNAME: ${{ secrets.ALIYUN_USERNAME }}
+          ALIYUN_PASSWORD: ${{ secrets.ALIYUN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for key in ALIYUN_USERNAME ALIYUN_PASSWORD; do
+            if [[ -z "${!key//[[:space:]]/}" ]]; then
+              echo "::error::Missing or unavailable Actions secret: ${key}. Configure it in repository Settings > Secrets and variables > Actions. Environment secrets require a matching job environment."
+              missing=1
+            fi
+          done
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
       - name: 登录阿里云容器镜像仓库
         uses: docker/login-action@v3
         with:

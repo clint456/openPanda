@@ -1,5 +1,27 @@
 # 编译与部署文档
 
+## GitHub Actions 登录镜像仓库失败排查
+
+如果 `docker/login-action@v3` 报 `Username and password required`，说明登录输入缺失，不是已经证明阿里云密码错误。
+
+1. 打开实际运行工作流的 GitHub 仓库：**Settings → Secrets and variables → Actions → Secrets → New repository secret**。
+2. 配置名称完全一致的 `ALIYUN_USERNAME`、`ALIYUN_PASSWORD`。使用阿里云容器镜像服务对应实例“访问凭证 / 登录指令”要求的用户名及登录密码，不要直接假定是 GitHub 密码或阿里云 AccessKey。
+3. 本地 `.env`、服务器 `.env` 不会自动成为 GitHub Secrets；Variables 也不会通过 `secrets.*` 读取。
+4. 当前 `/home/hy/work/other/openpanda/.github/workflows/deploy.yml` 的 job 未声明 `environment`。若使用 Environment secrets，需要给消费这些凭证的 job 绑定实际环境，并满足该环境审批与分支规则；不要随意填写不存在的环境名。也可按当前配置使用 repository secrets。
+5. Organization secrets 必须授权当前仓库。Fork PR、Dependabot 等受限运行可能拿不到普通 Actions secrets；不要通过放宽不可信工作流权限解决。当前部署工作流仅配置 push 和手动触发。
+6. 保存后重新运行失败任务。若同时修改了工作流，应提交修改并在新提交上触发运行；旧运行的 rerun 不会自动采用新的 YAML。
+
+登录前的检查只输出缺少的 Secret 名称，绝不输出值；检查通过只证明输入非空，不保证密码有效或具有镜像推送权限。不得把密码写进 YAML、提交到仓库或粘贴到聊天中。
+
+### Node 20 / punycode 警告与本次错误的区别
+
+Action 自身使用的 Node runtime 与 `actions/setup-node` 配置的项目 Node 版本不是同一回事。Node 20 退役和 `punycode` 弃用提示需要通过后续 Action 兼容升级处理，但不能修复缺失登录凭证。
+
+本次不设置 `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true`，也不回退项目 Node。官方迁移公告：
+https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+另需核对登录 registry 主机与镜像标签前缀一致：当前登录主机固定为 `crpi-c5c3flmci79oobwt.cn-shanghai.personal.cr.aliyuncs.com`；`ALIYUN_REGISTRY` 用于镜像标签，格式为“主机/命名空间”，不带 `https://`。如果改用其他实例，需要同时修改登录主机；这不是本次缺失凭证错误的直接原因。
+
 ## 本地开发
 
 ### 前置条件
