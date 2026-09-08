@@ -228,8 +228,10 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
   margin: 20px 0;
 }
 .article__header h1 {
+  font-family: var(--font-heading);
+  letter-spacing: var(--heading-tracking);
   font-size: clamp(30px, 5vw, 46px);
-  line-height: 1.4;
+  line-height: 1.5;
   margin-bottom: 16px;
 }
 .article__info {
@@ -261,8 +263,6 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
 
 /* 文章正文富文本样式 */
 .article__body {
-  font-size: 18px;
-  line-height: 1.8;
   color: var(--text-primary);
 }
 /* :deep() 穿透 scoped 样式，作用于 v-html 渲染的内容 */
@@ -277,7 +277,7 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
   overflow-x: auto;
 }
 .article__body :deep(code) {
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
 }
 .article__body :deep(blockquote) {

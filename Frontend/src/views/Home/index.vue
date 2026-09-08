@@ -33,7 +33,7 @@ const { articles, categories, loading, error, load } = useHomeContent()
 </script>
 <style scoped>
 .intro { position: relative; padding: 32px 0 72px; border-bottom: 1px solid var(--border-color); margin-bottom: 56px; }
-.intro h1 { font-size: clamp(34px, 5.5vw, 62px); letter-spacing: -.045em; line-height: 1.25; margin: 24px 0; max-width: 800px; position: relative; z-index: 1; }.intro h1 span { color: var(--color-primary); }
+.intro h1 { font-family: var(--font-heading); font-weight: 600; font-size: clamp(34px, 5.5vw, 58px); letter-spacing: var(--heading-tracking); line-height: 1.5; margin: 24px 0; max-width: 800px; position: relative; z-index: 1; }.intro h1 span { color: var(--color-primary); }
 .intro__description { max-width: 560px; color: var(--text-secondary); font-size: 16px; line-height: 1.9; }.intro__link { display: inline-block; margin-top: 24px; font-size: 14px; }
 .intro__mark { position: absolute; right: 24px; top: 30px; font: 170px/1.3 ui-monospace, monospace; color: var(--border-color); letter-spacing: -.15em; }.intro__mark span { color: var(--color-primary); opacity: .3; }
 .home-grid { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 64px; }.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }.section-heading h2 { font-size: 20px; }.section-heading a { font-size: 12px; }

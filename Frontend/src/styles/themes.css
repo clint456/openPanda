@@ -1,7 +1,7 @@
 /* VS Code Modern UI colors, adapted for reading. See docs/theme-design.md. */
 :root {
-  --light-page: #ffffff;
-  --light-panel: #f8f8f8;
+  --light-page: #f7f6f2;
+  --light-panel: #f0efeb;
   --light-text: #3b3b3b;
   --light-secondary: #616161;
   --light-border: #e5e5e5;

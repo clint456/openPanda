@@ -2,7 +2,7 @@
   <header class="site-header">
     <a class="skip-link" href="#main-content">{{ zh ? '跳转到正文' : 'Skip to content' }}</a>
     <div class="site-header__inner">
-      <router-link to="/" class="brand"><img src="/panda.png" alt="" width="32" height="32" /><span>OpenPanda<span class="brand__dot">.</span></span></router-link>
+      <BrandLogo :label="zh ? 'OpenPanda 首页' : 'OpenPanda home'" />
       <nav class="desktop-nav" :aria-label="zh ? '主导航' : 'Main navigation'">
         <router-link v-for="item in links" :key="item.path" :to="item.path">{{ item.label }}</router-link>
       </nav>
@@ -27,6 +27,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAppStore } from '@/stores/app'
 import { normalizeTheme } from '@/shared/lib/theme'
+import BrandLogo from '@/components/BrandLogo.vue'
 const app = useAppStore()
 const route = useRoute()
 const { locale } = useI18n()
@@ -48,10 +49,8 @@ function toggleLocale() {
 }
 </script>
 <style scoped>
-.site-header { border-bottom: 1px solid var(--border-color); background: var(--surface-panel); }
+.site-header { border-bottom: 1px solid var(--border-color); }
 .site-header__inner { max-width: 1120px; margin: auto; padding: 20px 24px; display: flex; align-items: center; gap: 48px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 750; letter-spacing: -.8px; color: var(--text-primary); }
-.brand img { border-radius: 8px; }.brand__dot { color: var(--color-primary); }
 .desktop-nav { display: flex; gap: 32px; margin-left: auto; }
 .desktop-nav a, .mobile-nav a { color: var(--text-secondary); font-size: 14px; }
 .desktop-nav .router-link-active, .mobile-nav .router-link-active { color: var(--color-primary); }
@@ -59,5 +58,5 @@ function toggleLocale() {
 .theme-select { min-height: 44px; max-width: 132px; padding: 6px 8px; color: var(--text-primary); background: var(--surface-input); border: 1px solid var(--border-input); border-radius: 6px; font-size: 13px; }
 @media(max-width:400px) { .site-header__inner { flex-wrap: wrap; }.header-actions { width: 100%; justify-content: flex-end; } }
 .mobile-nav { padding: 8px 24px 24px; display: flex; flex-direction: column; gap: 8px; }.mobile-nav a { padding: 12px; }
-@media(max-width: 640px) { .site-header__inner { gap: 8px; padding: 16px; }.desktop-nav { display: none; }.header-actions { margin-left: auto; }.mobile-toggle { display: inline-flex; }.brand { font-size: 19px; } }
+@media(max-width: 640px) { .site-header__inner { gap: 8px; padding: 16px; }.desktop-nav { display: none; }.header-actions { margin-left: auto; }.mobile-toggle { display: inline-flex; } }
 </style>

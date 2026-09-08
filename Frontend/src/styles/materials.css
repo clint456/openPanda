@@ -1,0 +1,32 @@
+/* The grain sits behind app content; text and images are never filtered. */
+body { position: relative; isolation: isolate; }
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url('/textures/paper.svg');
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  opacity: .24;
+}
+
+.site-header { background: var(--surface-panel); }
+
+@supports (background: color-mix(in srgb, white 90%, transparent)) and ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  .site-header {
+    background: color-mix(in srgb, var(--surface-panel) 90%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+@media (prefers-contrast: more), (forced-colors: active), print {
+  body::before { display: none; }
+  .site-header {
+    background: var(--surface-panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}

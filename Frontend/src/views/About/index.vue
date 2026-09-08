@@ -302,7 +302,7 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
 }
 .about__header h1 {
   font-size: 30px;
-  font-weight: bold;
+  font-weight: 600;
   margin-bottom: 10px;
 }
 .about__contact {
@@ -331,6 +331,9 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
   border: 1px solid var(--border-subtle);
 }
 .about__section h2 {
+  font-family: var(--font-heading);
+  letter-spacing: var(--heading-tracking);
+  line-height: 1.6;
   font-size: 19px;
   margin-bottom: 14px;
   padding-bottom: 10px;
@@ -415,17 +418,17 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
   border: 1px solid var(--border-subtle);
 }
 .skill__label {
-  font-weight: bold;
-  font-size: 13px;
+  font-weight: 600;
+  font-size: 14px;
   color: var(--link-foreground);
   display: block;
   margin-bottom: 4px;
 }
 .skill__text {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.7;
+  line-height: 1.85;
 }
 
 /* Footer */

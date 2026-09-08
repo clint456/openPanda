@@ -23,8 +23,8 @@ const date = computed(() => new Date(props.article.created_at).toLocaleDateStrin
 <style scoped>
 .article-row { display: grid; grid-template-columns: 130px minmax(0,1fr) 24px; gap: 28px; padding: 32px 0; border-bottom: 1px solid var(--border-color); }
 .article-row__date { display: flex; flex-direction: column; gap: 8px; color: var(--text-secondary); font-size: 12px; padding-top: 5px; }
-.article-row h2 { font-size: 23px; letter-spacing: -.02em; }.article-row h2 a { color: var(--text-primary); }.article-row h2 a:hover { color: var(--color-primary); }
-.article-row p { margin-top: 12px; color: var(--text-secondary); font-size: 15px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.article-row h2 { font-family: var(--font-heading); font-size: 23px; letter-spacing: var(--heading-tracking); line-height: 1.6; }.article-row h2 a { color: var(--text-primary); }.article-row h2 a:hover { color: var(--color-primary); }
+.article-row p { margin-top: 12px; color: var(--text-secondary); font-size: 16px; line-height: 1.9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .article-row__arrow { color: var(--color-primary); font-size: 22px; }
 @media(max-width:640px) { .article-row { grid-template-columns: minmax(0,1fr) 20px; gap: 12px; padding: 24px 0; }.article-row__date { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }.article-row h2 { font-size: 21px; } }
 </style>

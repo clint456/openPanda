@@ -13,7 +13,7 @@
 //   2. 新建 stores/user.ts（用户状态）
 // ============================================================
 import { defineStore } from 'pinia'
-import { ref, computed, onScopeDispose } from 'vue'
+import { ref, computed, onScopeDispose, watch } from 'vue'
 import { browserThemeEnvironment, createThemeController } from '@/shared/lib/theme'
 import type { ThemePreference, ResolvedTheme } from '@/shared/lib/theme'
 
@@ -28,6 +28,9 @@ export const useAppStore = defineStore('app', () => {
 
   /** 当前语言（zh-CN / en-US） */
   const locale = ref<string>(localStorage.getItem('locale') || 'zh-CN')
+  watch(locale, value => {
+    if (typeof document !== 'undefined') document.documentElement.lang = value
+  }, { immediate: true })
 
   /** 侧边栏是否展开（移动端适配用） */
   const sidebarOpen = ref<boolean>(false)
