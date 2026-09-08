@@ -82,7 +82,7 @@ export function chatWithAI(
       const decoder = new TextDecoder()
       let buffer = ''
 
-      while (true) {
+      while (!controller.signal.aborted) {
         const { done, value } = await reader.read()
         if (done) break
 

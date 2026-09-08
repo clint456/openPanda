@@ -68,7 +68,7 @@
       </div>
 
       <!-- 文章正文（Markdown → HTML 渲染） -->
-      <div class="article__body" v-html="renderedContent" />
+      <div class="article__body prose" v-html="renderedContent" />
 
       <!-- 底部操作 -->
       <div class="article__footer">
@@ -78,24 +78,34 @@
     </template>
 
     <!-- 文章不存在 -->
+    <div v-else-if="loadError" class="state-panel" role="alert">
+      <p>{{ zh ? '文章加载失败，请重试。' : 'Unable to load this article.' }}</p>
+      <button class="quiet-button" @click="fetchArticle(parseArticleId(String(route.params.slug)))">{{ zh ? '重试' : 'Retry' }}</button>
+    </div>
     <el-empty v-else :description="$t('common.noData')" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { isAxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft as ArrowLeftIcon, Edit as EditIcon, Delete as DeleteIcon } from '@element-plus/icons-vue'
 import { getArticleById, deleteArticle, setArticleVisibility } from '@/api/modules/article'
 import { useAuthStore } from '@/stores/auth'
-import { marked } from 'marked'       // Markdown 解析器
-import { parseArticleId, getArticleUrl } from '@/utils'
+import { renderMarkdown } from '@/shared/lib/markdown'
+import { parseArticleId } from '@/utils'
 import type { Article } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const { locale } = useI18n()
+const zh = computed(() => locale.value === 'zh-CN')
+const loadError = ref(false)
+let requestVersion = 0
 
 // ============================================================
 // 响应式数据
@@ -106,13 +116,16 @@ const loading = ref<boolean>(true)
 /** 将 Markdown 内容转换为 HTML（用于 v-html 渲染） */
 const renderedContent = computed<string>(() => {
   if (!article.value?.content) return ''
-  return marked.parse(article.value.content) as string
+  return renderMarkdown(article.value.content)
 })
 
 // ============================================================
 // 生命周期
 // ============================================================
-onMounted(async () => {
+watch(() => route.params.slug, async () => {
+  requestVersion++
+  article.value = null
+  loadError.value = false
   // 从路由参数提取数字ID（兼容 /articles/123 和 /articles/123-slug）
   const id = parseArticleId(route.params.slug as string)
   if (id) {
@@ -120,7 +133,7 @@ onMounted(async () => {
   } else {
     loading.value = false
   }
-})
+}, { immediate: true })
 
 // ============================================================
 // 方法
@@ -128,16 +141,22 @@ onMounted(async () => {
 
 /** 获取文章详情 */
 async function fetchArticle(id: number): Promise<void> {
+  const version = ++requestVersion
   loading.value = true
+  loadError.value = false
   try {
     const { data } = await getArticleById(id)
+    if (version !== requestVersion) return
     if (data.data) {
       article.value = data.data
+      document.title = `${data.data.title} - OpenPanda`
     }
   } catch (error) {
-    console.error('获取文章详情失败:', error)
+    if (version === requestVersion) {
+      loadError.value = !(isAxiosError(error) && error.response?.status === 404)
+    }
   } finally {
-    loading.value = false
+    if (version === requestVersion) loading.value = false
   }
 }
 
@@ -145,7 +164,7 @@ async function fetchArticle(id: number): Promise<void> {
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleDateString('zh-CN', {
+  return d.toLocaleDateString(locale.value, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -171,7 +190,8 @@ async function handleDelete(): Promise<void> {
 }
 
 /** 切换文章可见性 */
-async function handleToggleVisibility(isPublic: boolean): Promise<void> {
+async function handleToggleVisibility(value: string | number | boolean): Promise<void> {
+  const isPublic = value === true
   if (!article.value) return
   try {
     await setArticleVisibility(article.value.id, isPublic)
@@ -185,7 +205,7 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
 
 <style scoped>
 .article-detail {
-  max-width: 800px;
+  max-width: 740px;
   margin: 0 auto;
 }
 
@@ -208,7 +228,7 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
   margin: 20px 0;
 }
 .article__header h1 {
-  font-size: 28px;
+  font-size: clamp(30px, 5vw, 46px);
   line-height: 1.4;
   margin-bottom: 16px;
 }
@@ -225,7 +245,7 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
   display: flex;
   gap: 20px;
   font-size: 14px;
-  color: #999;
+  color: var(--text-secondary);
 }
 
 .article__cover {
@@ -241,9 +261,9 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
 
 /* 文章正文富文本样式 */
 .article__body {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.8;
-  color: #333;
+  color: var(--text-primary);
 }
 /* :deep() 穿透 scoped 样式，作用于 v-html 渲染的内容 */
 .article__body :deep(img) {
@@ -251,7 +271,7 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
   border-radius: 4px;
 }
 .article__body :deep(pre) {
-  background: #f5f7fa;
+  background: var(--surface-code);
   padding: 16px;
   border-radius: 4px;
   overflow-x: auto;
@@ -261,16 +281,16 @@ async function handleToggleVisibility(isPublic: boolean): Promise<void> {
   font-size: 14px;
 }
 .article__body :deep(blockquote) {
-  border-left: 4px solid #c8754a;
+  border-left: 3px solid var(--color-primary);
   padding-left: 16px;
-  color: #666;
+  color: var(--text-secondary);
   margin: 16px 0;
 }
 
 .article__footer {
   margin-top: 40px;
   text-align: center;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 </style>

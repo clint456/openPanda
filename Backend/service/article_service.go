@@ -182,7 +182,7 @@ func (s *ArticleService) GetAdminList(page, pageSize int, categoryID, tagID uint
 	var articles []model.Article
 	var total int64
 
-	query := s.DB.Model(&model.Article{}).Where("is_published = ?", true)
+	query := s.DB.Model(&model.Article{})
 
 	if categoryID > 0 {
 		query = query.Where("category_id = ?", categoryID)
@@ -235,6 +235,14 @@ func (s *CategoryService) GetAll() ([]model.Category, error) {
 }
 
 // GetBySlug 根据 slug 获取分类
+func (s *CategoryService) GetByID(id uint) (*model.Category, error) {
+	var category model.Category
+	if err := s.DB.First(&category, id).Error; err != nil {
+		return nil, err
+	}
+	return &category, nil
+}
+
 func (s *CategoryService) GetBySlug(slug string) (*model.Category, error) {
 	var category model.Category
 	if err := s.DB.Where("slug = ?", slug).First(&category).Error; err != nil {

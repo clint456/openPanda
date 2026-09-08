@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"math"
 	"strings"
 	"time"
 
@@ -47,7 +48,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 				return nil, jwt.ErrSignatureInvalid
 			}
 			return []byte(cfg.JWT.Secret), nil
-		})
+		}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithExpirationRequired())
 
 		if err != nil || !token.Valid {
 			utils.Unauthorized(c, "Token无效或已过期")
@@ -64,7 +65,12 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 5. 将用户ID存入上下文，后续 handler 可取出使用
-		userID := uint(claims["user_id"].(float64))
+		userID, valid := claimUserID(claims)
+		if !valid {
+			utils.Unauthorized(c, "Token用户无效")
+			c.Abort()
+			return
+		}
 		c.Set("userID", userID)
 
 		c.Next() // 继续执行后续 handler
@@ -123,7 +129,7 @@ func TryGetUserID(c *gin.Context) (uint, bool) {
 			return nil, jwt.ErrSignatureInvalid
 		}
 		return []byte(cfg.JWT.Secret), nil
-	})
+	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithExpirationRequired())
 
 	if err != nil || !token.Valid {
 		return 0, false
@@ -134,6 +140,13 @@ func TryGetUserID(c *gin.Context) (uint, bool) {
 		return 0, false
 	}
 
-	userID := uint(claims["user_id"].(float64))
-	return userID, true
+	return claimUserID(claims)
+}
+
+func claimUserID(claims jwt.MapClaims) (uint, bool) {
+	id, ok := claims["user_id"].(float64)
+	if !ok || math.IsNaN(id) || math.IsInf(id, 0) || id < 1 || id > 4294967295 || math.Trunc(id) != id {
+		return 0, false
+	}
+	return uint(id), true
 }

@@ -34,7 +34,8 @@
     // paths: 路径映射，@/ 映射到 src/
     // 使用示例：import { Article } from '@/types'
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "md-editor-v3": ["node_modules/md-editor-v3/lib/MdEditor/index.d.ts"]
     },
     // --- 其他 ---
     // resolveJsonModule: 允许 import JSON 文件

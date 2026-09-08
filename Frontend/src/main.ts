@@ -19,6 +19,7 @@ import { createPinia } from 'pinia'     // Pinia 状态管理
 import i18n from './i18n'               // 国际化配置
 import ElementPlus from 'element-plus'  // Element Plus UI 框架
 import 'element-plus/dist/index.css'    // Element Plus 样式
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import './styles/index.css'             // 全局自定义样式
 
 // ============================================================
@@ -42,7 +43,7 @@ import { useAppStore } from '@/stores/app'
 const authStore = useAuthStore()
 authStore.initAuth()
 const appStore = useAppStore()
-appStore.initTheme()      // 初始化夜间模式（从 localStorage 恢复）
+appStore.initTheme()      // 恢复主题偏好并监听系统/跨标签页变化
 
 // ============================================================
 // 3. 挂载到 HTML 中的 #app 元素（index.html 中的 <div id="app">）

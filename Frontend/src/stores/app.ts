@@ -13,7 +13,9 @@
 //   2. 新建 stores/user.ts（用户状态）
 // ============================================================
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'  // Vue3 Composition API
+import { ref, computed, onScopeDispose } from 'vue'
+import { browserThemeEnvironment, createThemeController } from '@/shared/lib/theme'
+import type { ThemePreference, ResolvedTheme } from '@/shared/lib/theme'
 
 // defineStore 第一个参数是 store 的唯一ID
 // 第二个参数是配置函数（Setup Store 风格，推荐）
@@ -31,7 +33,10 @@ export const useAppStore = defineStore('app', () => {
   const sidebarOpen = ref<boolean>(false)
 
   /** 夜间模式 */
-  const isDark = ref<boolean>(localStorage.getItem('theme') === 'dark')
+  const themePreference = ref<ThemePreference>('system')
+  const resolvedTheme = ref<ResolvedTheme>('light')
+  const isDark = computed(() => resolvedTheme.value === 'dark')
+  let themeController: ReturnType<typeof createThemeController> | undefined
 
   // ============================================================
   // Getters（计算属性）
@@ -65,23 +70,33 @@ export const useAppStore = defineStore('app', () => {
 
   /** 切换夜间模式 */
   function toggleDark(): void {
-    isDark.value = !isDark.value
-    const theme = isDark.value ? 'dark' : 'light'
-    localStorage.setItem('theme', theme)
-    document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : '')
+    setThemePreference(isDark.value ? 'light' : 'dark')
+  }
+
+  function setThemePreference(value: ThemePreference): void {
+    if (!themeController) initTheme()
+    themeController?.set(value)
   }
 
   /** 初始化夜间模式（应用启动时调用） */
   function initTheme(): void {
-    if (isDark.value) {
-      document.documentElement.setAttribute('data-theme', 'dark')
-    }
+    if (typeof window === 'undefined') return
+    themeController?.dispose()
+    themeController = createThemeController(browserThemeEnvironment(), (preference, resolved) => {
+      themePreference.value = preference
+      resolvedTheme.value = resolved
+    })
   }
+
+  onScopeDispose(() => themeController?.dispose())
 
   return {
     locale,
     sidebarOpen,
     isDark,
+    themePreference,
+    resolvedTheme,
+    setThemePreference,
     isZhCN,
     isEnUS,
     setLocale,

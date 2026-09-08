@@ -1,0 +1,116 @@
+/* VS Code Modern UI colors, adapted for reading. See docs/theme-design.md. */
+:root {
+  --light-page: #ffffff;
+  --light-panel: #f8f8f8;
+  --light-text: #3b3b3b;
+  --light-secondary: #616161;
+  --light-border: #e5e5e5;
+  --light-input: #ffffff;
+  --light-input-border: #767676;
+  --light-link: #005fb8;
+  --light-button: #005fb8;
+  --light-button-hover: #0258a8;
+  --light-focus: #005fb8;
+  --light-code: #f8f8f8;
+  --light-selection: #add6ff;
+  --dark-page: #1f1f1f;
+  --dark-panel: #181818;
+  --dark-text: #cccccc;
+  --dark-secondary: #9d9d9d;
+  --dark-border: #2b2b2b;
+  --dark-input: #313131;
+  --dark-input-border: #868686;
+  --dark-link: #4daafc;
+  --dark-button: #0078d4;
+  --dark-button-hover: #026ec1;
+  --dark-focus: #0078d4;
+  --dark-code: #2b2b2b;
+  --dark-selection: #264f78;
+  --button-text: #ffffff;
+}
+
+:root, :root[data-theme='light'] {
+  color-scheme: light;
+  --surface-page: var(--light-page);
+  --surface-panel: var(--light-panel);
+  --surface-input: var(--light-input);
+  --surface-code: var(--light-code);
+  --foreground: var(--light-text);
+  --foreground-secondary: var(--light-secondary);
+  --border-subtle: var(--light-border);
+  --border-input: var(--light-input-border);
+  --link-foreground: var(--light-link);
+  --button-background: var(--light-button);
+  --button-hover: var(--light-button-hover);
+  --focus-ring: var(--light-focus);
+  --selection-background: var(--light-selection);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface-page: var(--dark-page);
+  --surface-panel: var(--dark-panel);
+  --surface-input: var(--dark-input);
+  --surface-code: var(--dark-code);
+  --foreground: var(--dark-text);
+  --foreground-secondary: var(--dark-secondary);
+  --border-subtle: var(--dark-border);
+  --border-input: var(--dark-input-border);
+  --link-foreground: var(--dark-link);
+  --button-background: var(--dark-button);
+  --button-hover: var(--dark-button-hover);
+  --focus-ring: var(--dark-focus);
+  --selection-background: var(--dark-selection);
+}
+
+/* No-JS / blocked bootstrap fallback; explicit preference always takes priority. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --surface-page: var(--dark-page);
+    --surface-panel: var(--dark-panel);
+    --surface-input: var(--dark-input);
+    --surface-code: var(--dark-code);
+    --foreground: var(--dark-text);
+    --foreground-secondary: var(--dark-secondary);
+    --border-subtle: var(--dark-border);
+    --border-input: var(--dark-input-border);
+    --link-foreground: var(--dark-link);
+    --button-background: var(--dark-button);
+    --button-hover: var(--dark-button-hover);
+    --focus-ring: var(--dark-focus);
+    --selection-background: var(--dark-selection);
+  }
+}
+
+/* Compatibility aliases and component-library adapter: no second theme state. */
+:root, :root.dark {
+  --bg-page: var(--surface-page);
+  --bg-white: var(--surface-panel);
+  --border-color: var(--border-subtle);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--foreground-secondary);
+  --text-muted: var(--foreground-secondary);
+  --color-primary: var(--link-foreground);
+  --color-primary-light: var(--link-foreground);
+  --color-primary-dark: var(--link-foreground);
+  --color-success: #388a34;
+  --color-warning: #9e6a03;
+  --color-danger: #c72e0f;
+  --el-color-primary: var(--button-background);
+  --el-color-primary-dark-2: var(--button-hover);
+  --el-bg-color: var(--surface-page);
+  --el-bg-color-overlay: var(--surface-panel);
+  --el-bg-color-page: var(--surface-panel);
+  --el-fill-color-blank: var(--surface-input);
+  --el-fill-color-light: var(--surface-panel);
+  --el-text-color-primary: var(--foreground);
+  --el-text-color-regular: var(--foreground);
+  --el-text-color-secondary: var(--foreground-secondary);
+  --el-text-color-placeholder: var(--foreground-secondary);
+  --el-border-color: var(--border-input);
+  --el-border-color-light: var(--border-subtle);
+}
+
+html { background: var(--surface-page); }
+::selection { background: var(--selection-background); color: var(--foreground); }

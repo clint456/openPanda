@@ -1,79 +1,33 @@
-<!--
-  文件: layouts/DefaultLayout.vue
-  说明: 默认布局组件（顶部导航栏 + 主体内容区 + 页脚）
-        所有公开页面都使用此布局
-
-  Vue 插槽(slot) 说明：
-    <slot /> 是 Vue 的内容分发出口
-    父组件在 <DefaultLayout>xxx</DefaultLayout> 中的内容
-    会替换这里的 <slot />
--->
 <template>
-  <div class="layout">
-    <!-- ============================================================
-    顶部导航栏
-    ============================================================ -->
+  <div class="site-layout">
     <AppHeader />
-
-    <!-- ============================================================
-    主体内容区
-    <slot />: 这里会渲染 <router-view /> 过来的页面内容
-    ============================================================ -->
-    <main class="layout__main">
-      <div class="layout__container">
-        <slot />
-      </div>
-    </main>
-
-    <!-- ============================================================
-    页脚
-    ============================================================ -->
-    <footer class="layout__footer">
-      <div class="layout__container">
-        <p>{{ $t('footer.copyright') }}</p>
-        <p class="footer__powered">{{ $t('footer.poweredBy') }}</p>
-        <a href="https://beian.miit.gov.cn/" target="_blank">蜀ICP备2025151206号</a>
+    <main id="main-content" class="site-main" tabindex="-1"><slot /></main>
+    <footer class="site-footer">
+      <div><strong>OpenPanda.</strong><p>{{ zh ? '记录技术，也记录思考。' : 'Notes on building, learning, and thinking.' }}</p></div>
+      <div class="footer-links">
+        <router-link :to="auth.isLoggedIn ? '/articles/new' : '/login'">{{ zh ? '创作空间' : 'Studio' }}</router-link>
+        <button v-if="auth.isLoggedIn" class="quiet-button" @click="logout">{{ zh ? '退出登录' : 'Sign out' }}</button>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2025151206号</a>
       </div>
     </footer>
   </div>
 </template>
-
 <script setup lang="ts">
-// 导入顶部导航组件
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
-// 注意：layout 不需要导入 router-view，它由父组件(App.vue)传入
+import { useAuthStore } from '@/stores/auth'
+const { locale } = useI18n()
+const zh = computed(() => locale.value === 'zh-CN')
+const auth = useAuthStore()
+const router = useRouter()
+function logout() { auth.logout(); router.push('/') }
 </script>
-
 <style scoped>
-/* scoped: 样式只在此组件内生效，不会泄漏到其他组件 */
-
-.layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /* vh = viewport height，100vh = 满屏高度 */
-}
-
-.layout__main {
-  flex: 1; /* 让主体区域撑满剩余空间，把页脚推到底部 */
-  padding: 20px 0;
-}
-
-.layout__container {
-  max-width: 1200px;  /* 内容最大宽度 */
-  margin: 0 auto;     /* 水平居中 */
-  padding: 0 20px;    /* 左右留白 */
-}
-
-.layout__footer {
-  background-color: #3d322a;
-  color: #e8ddd2;
-  text-align: center;
-  padding: 20px 0;
-  font-size: 14px;
-}
-.footer__powered {
-  margin-top: 8px;
-  color: #b5a594;
-  font-size: 12px;
-}
+.site-layout { min-height: 100vh; display: flex; flex-direction: column; }
+.site-main { width: 100%; max-width: 1120px; padding: 56px 24px 96px; margin: auto; flex: 1; }
+.site-footer { max-width: 1120px; width: calc(100% - 48px); margin: auto; padding: 32px 0; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; gap: 24px; color: var(--text-secondary); font-size: 12px; }
+.site-footer strong { color: var(--text-primary); font-size: 16px; }.site-footer p { margin-top: 8px; }.footer-links { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+@media(max-width:640px) { .site-main { padding: 32px 16px 64px; }.site-footer { flex-direction: column; width: calc(100% - 32px); } }
 </style>

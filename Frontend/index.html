@@ -2,6 +2,16 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <script id="theme-bootstrap">
+      (function () {
+        var preference = 'system';
+        try { preference = localStorage.getItem('theme'); } catch (_) {}
+        var dark = preference === 'dark' || (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
     <!-- 响应式视口：适配手机端和电脑端 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 网站图标（后续可替换为自己的logo） -->

@@ -174,11 +174,10 @@
 import { ref, reactive, nextTick, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Delete, CopyDocument, Promotion, Close, Setting } from '@element-plus/icons-vue'
-import { marked } from 'marked'
+import { renderMarkdown } from '@/shared/lib/markdown'
 import http from '@/api'
 import { getAIProviders, chatWithAI, type AIProvider, type ChatMessage } from '@/api/modules/ai'
 
-marked.setOptions({ breaks: true, gfm: true })
 
 // ========== Chat state ==========
 const providers = ref<AIProvider[]>([])
@@ -226,7 +225,6 @@ function onProviderChange(key: string) {
   const p = providers.value.find(x => x.key === key)
   if (p) currentProviderName.value = p.name
 }
-function renderMarkdown(text: string) { return text ? (marked.parse(text) as string) : '' }
 
 async function sendMessage(text?: string) {
   const content = (text || inputText.value).trim()
@@ -388,7 +386,7 @@ onMounted(async () => {
   color: var(--color-primary-dark);
 }
 .message-content--md :deep(pre) {
-  background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 8px;
+  background: var(--surface-code); color: var(--text-primary); padding: 16px; border-radius: 8px;
   overflow-x: auto; margin: 12px 0;
 }
 .message-content--md :deep(pre code) { background: none; padding: 0; color: inherit; }
@@ -412,12 +410,6 @@ onMounted(async () => {
 .settings-title { display: flex; justify-content: space-between; align-items: center; width: 100%; padding-right: 16px; font-size: 14px; font-weight: 500; }
 .settings-form { padding: 8px 0; }
 .settings-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); }
-
-/* ── Dark mode overrides for code block & drawer ── */
-[data-theme='dark'] .message-content--md :deep(pre) { background: #16161e; color: #e0e0f0; }
-[data-theme='dark'] .message-content--md :deep(code) { background: #3d3d48; color: var(--color-primary-light); }
-[data-theme='dark'] .message-content--md :deep(th) { background: #33333d; }
-[data-theme='dark'] .streaming-cursor { color: var(--color-primary-light); }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {

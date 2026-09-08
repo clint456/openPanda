@@ -14,9 +14,9 @@ package controller
 import (
 	"strconv"
 
+	"openpanda-backend/internal/content/domain"
 	"openpanda-backend/middleware"
 	"openpanda-backend/model"
-	"openpanda-backend/service"
 	"openpanda-backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -25,12 +25,35 @@ import (
 // ArticleController 文章控制器
 // 持有 ArticleService 用于处理业务逻辑
 type ArticleController struct {
-	ArticleService  *service.ArticleService
-	CategoryService *service.CategoryService
+	ArticleService  ArticleUseCases
+	CategoryService CategoryUseCases
+}
+
+// Ports keep HTTP handlers testable without a database or an ORM.
+type ArticleUseCases interface {
+	GetList(int, int, uint, uint) ([]model.Article, int64, error)
+	GetByID(uint) (*model.Article, error)
+	Create(*model.Article) error
+	Update(*model.Article) error
+	Delete(uint) error
+	IncrementViewCount(uint) error
+	GetHotArticles(int) ([]model.Article, error)
+	Search(string, int, int) ([]model.Article, int64, error)
+	GetAdminList(int, int, uint, uint) ([]model.Article, int64, error)
+	SetPublic(uint, bool) error
+}
+
+type CategoryUseCases interface {
+	GetAll() ([]model.Category, error)
+	GetByID(uint) (*model.Category, error)
+	GetBySlug(string) (*model.Category, error)
+	Create(*model.Category) error
+	Update(*model.Category) error
+	Delete(uint) error
 }
 
 // NewArticleController 构造函数
-func NewArticleController(articleService *service.ArticleService, categoryService *service.CategoryService) *ArticleController {
+func NewArticleController(articleService ArticleUseCases, categoryService CategoryUseCases) *ArticleController {
 	return &ArticleController{
 		ArticleService:  articleService,
 		CategoryService: categoryService,
@@ -91,15 +114,15 @@ func (ctrl *ArticleController) GetArticleDetail(c *gin.Context) {
 	}
 
 	// 未登录用户只能查看已公开的文章
-	if _, isLogin := middleware.TryGetUserID(c); !isLogin && !article.IsPublic {
+	_, isLogin := middleware.TryGetUserID(c)
+	c.Header("Cache-Control", "no-store")
+	if !domain.CanRead(article.IsPublished, article.IsPublic, isLogin) {
 		utils.NotFound(c, "文章不存在")
 		return
 	}
 
-	// 异步增加阅读量（不影响接口响应速度）
-	go func() {
-		_ = ctrl.ArticleService.IncrementViewCount(uint(id))
-	}()
+	// Keep work bounded by the request; a failed counter must not hide content.
+	_ = ctrl.ArticleService.IncrementViewCount(uint(id))
 
 	utils.Success(c, article)
 }
@@ -341,16 +364,16 @@ func (ctrl *ArticleController) UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	existing, err := ctrl.CategoryService.GetBySlug(input.Slug)
+	existing, err := ctrl.CategoryService.GetByID(uint(id))
 	if err != nil {
-		// fallback: 用 ID 查
-		var categories []model.Category
-		// 简单处理，直接查 ID 对应的记录
-		category := model.Category{}
-		category.ID = uint(id)
-		_ = categories
 		utils.NotFound(c, "分类不存在")
 		return
+	}
+	if input.Slug != "" && input.Slug != existing.Slug {
+		if other, err := ctrl.CategoryService.GetBySlug(input.Slug); err == nil && other.ID != existing.ID {
+			utils.Error(c, 409, 409, "分类标识已存在")
+			return
+		}
 	}
 
 	if input.Name != "" {

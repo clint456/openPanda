@@ -292,6 +292,7 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
 .about-page {
   max-width: 860px;
   margin: 0 auto;
+  color: var(--text-primary);
 }
 
 /* Header */
@@ -309,11 +310,11 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
   justify-content: center;
   flex-wrap: wrap;
   gap: 6px 18px;
-  color: #606266;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 .about__contact a {
-  color: #409eff;
+  color: var(--link-foreground);
   text-decoration: none;
 }
 .about__contact a:hover {
@@ -322,17 +323,18 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
 
 /* Section */
 .about__section {
-  background: #fff;
+  background: var(--surface-panel);
+  color: var(--text-primary);
   padding: 24px 28px;
   margin-bottom: 18px;
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  border: 1px solid var(--border-subtle);
 }
 .about__section h2 {
   font-size: 19px;
   margin-bottom: 14px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Experience */
@@ -347,22 +349,22 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
   flex-wrap: wrap;
 }
 .exp__org {
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 13px;
   margin: 2px 0 6px;
 }
 .exp__date {
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 .exp__desc {
-  color: #606266;
+  color: var(--text-secondary);
   line-height: 1.8;
 }
 .about__section ul {
   padding-left: 18px;
   line-height: 1.9;
-  color: #303133;
+  color: var(--text-primary);
   margin: 4px 0 0;
 }
 .about__section li {
@@ -373,7 +375,7 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
 .proj__item {
   margin-bottom: 18px;
   padding-bottom: 16px;
-  border-bottom: 1px dashed #ebeef5;
+  border-bottom: 1px dashed var(--border-subtle);
 }
 .proj__item:last-child {
   margin-bottom: 0;
@@ -387,16 +389,16 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
   flex-wrap: wrap;
 }
 .proj__date {
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 .proj__stack {
-  color: #909399;
+  color: var(--text-secondary);
   font-size: 13px;
   margin: 2px 0 6px;
 }
 .proj__desc {
-  color: #606266;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -409,26 +411,27 @@ const data = computed(() => appStore.locale === 'en-US' ? en : zh)
 .skill__card {
   padding: 10px 14px;
   border-radius: 6px;
-  background: #f8f9fa;
+  background: var(--surface-page);
+  border: 1px solid var(--border-subtle);
 }
 .skill__label {
   font-weight: bold;
   font-size: 13px;
-  color: #409eff;
+  color: var(--link-foreground);
   display: block;
   margin-bottom: 4px;
 }
 .skill__text {
   margin: 0;
   font-size: 13px;
-  color: #606266;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
 /* Footer */
 .about__footer {
   text-align: center;
-  color: #909399;
+  color: var(--text-secondary);
   padding: 8px 0 20px;
 }
 

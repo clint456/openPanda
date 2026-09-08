@@ -1,263 +1,43 @@
-<!--
-  文件: views/Home/index.vue
-  说明: 首页
-        展示：Banner区域、三大技术专栏卡片、最新文章、热门文章
-        这是用户访问网站看到的第一个页面
-
-  后续拓展：替换为真实 API 数据、添加轮播图、添加更多内容区域
--->
 <template>
-  <div class="home">
-    <!-- ============================================================
-    Hero Banner（顶部横幅区域）
-    ============================================================ -->
-    <section class="home__hero">
-      <img src="/panda.png" alt="OpenPanda" class="hero__logo" />
-      <!-- <h1 class="hero__title">{{ $t('homePage.title') }}</h1> -->
-      <p class="hero__subtitle">{{ $t('homePage.subtitle') }}</p>
-      <p class="hero__desc">{{ $t('homePage.description') }}</p>
+  <div>
+    <section class="intro">
+      <p class="eyebrow">OPENPANDA / FIELD NOTES</p>
+      <h1>{{ zh ? '在软硬件之间，' : 'Between hardware' }}<br /><span>{{ zh ? '把探索写下来。' : 'and possibility.' }}</span></h1>
+      <p class="intro__description">{{ zh ? '关于嵌入式 Linux、硬件电路与单片机的实践手记。从一个问题出发，记录每一次理解与构建。' : 'Field notes on embedded Linux, circuits, and microcontrollers. One question, one experiment, one deeper understanding at a time.' }}</p>
+      <router-link to="/about" class="intro__link">{{ zh ? '认识作者' : 'Meet the author' }} <span aria-hidden="true">↗</span></router-link>
+      <div class="intro__mark" aria-hidden="true">{<span>p</span>}</div>
     </section>
-
-    <!-- ============================================================
-    三大技术专栏卡片
-    ============================================================ -->
-    <section class="home__categories">
-      <h2 class="section__title">{{ $t('common.categories') }}</h2>
-      <div class="categories__grid">
-        <!-- 使用 el-card 展示每个分类 -->
-        <el-card
-          v-for="cat in categories"
-          :key="cat.slug"
-          class="category__card"
-          shadow="hover"
-          @click="router.push(`/category/${cat.slug}`)"
-        >
-          <h3>{{ cat.name }}</h3>
-          <p>{{ cat.description }}</p>
-        </el-card>
-      </div>
-    </section>
-
-    <!-- ============================================================
-    最新文章列表
-    ============================================================ -->
-    <section class="home__latest">
-      <h2 class="section__title">{{ $t('homePage.latestArticles') }}</h2>
-      <div class="articles__list">
-        <!-- v-for 遍历文章列表渲染 -->
-        <el-card
-          v-for="article in latestArticles"
-          :key="article.id"
-          class="article__card"
-          shadow="hover"
-          @click="goToArticle(article)"
-        >
-          <div class="article__info">
-            <h3>{{ article.title }}</h3>
-            <p class="article__summary">{{ article.summary || article.content.slice(0, 100) + '...' }}</p>
-            <div class="article__meta">
-              <span v-if="article.category">{{ article.category.name }}</span>
-              <span>{{ $t('common.viewCount') }}: {{ article.view_count }}</span>
-            </div>
-          </div>
-        </el-card>
-
-        <!-- 数据为空时显示 -->
-        <el-empty v-if="latestArticles.length === 0" :description="$t('common.noData')" />
-      </div>
-    </section>
+    <div class="home-grid">
+      <section aria-labelledby="latest-heading">
+        <div class="section-heading"><h2 id="latest-heading">{{ zh ? '最近的记录' : 'Latest writing' }}</h2><router-link to="/articles">{{ zh ? '全部文章' : 'All writing' }} →</router-link></div>
+        <div v-if="loading" class="state-panel" role="status">{{ zh ? '正在翻开手记…' : 'Loading notes…' }}</div>
+        <div v-else-if="error" class="state-panel" role="alert"><p>{{ zh ? '暂时无法加载文章。' : 'Unable to load writing.' }}</p><button class="quiet-button" @click="load">{{ zh ? '重新加载' : 'Try again' }}</button></div>
+        <template v-else><ArticleRow v-for="article in articles" :key="article.id" :article="article" /><p v-if="!articles.length" class="state-panel">{{ zh ? '新的记录，即将开始。' : 'New notes are on their way.' }}</p></template>
+      </section>
+      <aside class="topics" aria-labelledby="topics-heading">
+        <p class="eyebrow">EXPLORE</p><h2 id="topics-heading">{{ zh ? '沿着兴趣探索' : 'Follow your curiosity' }}</h2>
+        <router-link v-for="(category, index) in categories" :key="category.id" :to="`/category/${category.slug}`"><span class="topics__number">{{ String(index + 1).padStart(2, '0') }}</span><span>{{ category.name }}<small>{{ category.description }}</small></span><span aria-hidden="true">↗</span></router-link>
+        <div class="topics__note"><span aria-hidden="true">⌘</span><p>{{ zh ? '理解原理，动手验证，保持好奇。' : 'Understand the fundamentals. Build to learn. Stay curious.' }}</p><router-link to="/tools">{{ zh ? '打开工具箱' : 'Open the toolbox' }} →</router-link></div>
+      </aside>
+    </div>
   </div>
 </template>
-
 <script setup lang="ts">
-// ============================================================
-// 导入
-// ============================================================
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { getArticles, getCategories } from '@/api/modules/article'
-import { getArticleUrl } from '@/utils'
-import type { Article, Category } from '@/types'
-
-const router = useRouter()
-
-// ============================================================
-// 响应式数据
-// ============================================================
-
-/** 专栏分类（从 API 动态加载，与专栏管理保持一致） */
-const categories = ref<Category[]>([])
-
-/** 最新文章列表 */
-const latestArticles = ref<Article[]>([])
-
-/** 热门文章列表（首页暂未显示，预留后续使用） */
-// const hotArticles = ref<Article[]>([]) // 取消注释即可使用
-
-// ============================================================
-// 生命周期钩子
-// onMounted: 组件挂载到 DOM 后执行（类似于以前的 mounted）
-// 适合在此处发起 API 请求加载数据
-// ============================================================
-onMounted(async () => {
-  await Promise.all([fetchCategories(), fetchLatestArticles()])
-})
-
-// ============================================================
-// 方法
-// ============================================================
-
-/** 从 API 加载专栏分类（与专栏管理页面数据一致） */
-async function fetchCategories(): Promise<void> {
-  try {
-    const { data } = await getCategories()
-    if (data.data) {
-      categories.value = data.data
-    }
-  } catch {
-    console.error('获取分类列表失败')
-  }
-}
-
-/** 获取最新文章 */
-async function fetchLatestArticles(): Promise<void> {
-  try {
-    // 发送 API 请求，解构取出 data.data.list
-    const { data } = await getArticles({ page: 1, page_size: 6 })
-    // data.data 是 ApiResponse<PaginatedData<Article>>
-    // data.data.data.list 才是文章数组
-    if (data.data && data.data.list) {
-      latestArticles.value = data.data.list
-    }
-  } catch (error) {
-    // 接口未启动时静默失败，页面显示空状态
-    console.error('获取文章列表失败:', error)
-  }
-}
-
-/** 跳转到文章详情页 */
-function goToArticle(article: Article): void {
-  router.push(getArticleUrl(article))
-}
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import ArticleRow from '@/modules/content/components/ArticleRow.vue'
+import { useHomeContent } from '@/modules/content/composables/useHomeContent'
+const { locale } = useI18n()
+const zh = computed(() => locale.value === 'zh-CN')
+const { articles, categories, loading, error, load } = useHomeContent()
 </script>
-
 <style scoped>
-.home {
-  /* 页面通用样式 */
-}
-
-/* Hero Banner */
-.home__hero {
-  text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #c8754a 0%, #d4946e 100%);
-  border-radius: 12px;
-  color: #fff;
-  margin-bottom: 40px;
-}
-.hero__logo {
-  width: 100px;
-  height: 100px;
-  border-radius: 18px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-.hero__title {
-  font-size: 42px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-.hero__subtitle {
-  font-size: 20px;
-  opacity: 0.9;
-  margin-bottom: 8px;
-}
-.hero__desc {
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-/* 通用区块标题 */
-.section__title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #c8754a;
-}
-
-/* 分类卡片网格 */
-.categories__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
-}
-.category__card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.category__card:hover {
-  transform: translateY(-4px);
-}
-.category__card h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-  color: #c8754a;
-}
-.category__card p {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-.category__link {
-  font-size: 13px;
-  font-weight: 700;
-  color: #9e9e9d;
-}
-
-/* 文章列表 */
-.articles__list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.article__card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.article__card:hover {
-  transform: translateX(4px);
-}
-.article__info h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-.article__summary {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.article__meta {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #999;
-}
-
-/* 响应式：手机端 */
-@media (max-width: 768px) {
-  .home__hero {
-    padding: 40px 16px;
-  }
-  .hero__title {
-    font-size: 28px;
-  }
-  .hero__subtitle {
-    font-size: 16px;
-  }
-}
+.intro { position: relative; padding: 32px 0 72px; border-bottom: 1px solid var(--border-color); margin-bottom: 56px; }
+.intro h1 { font-size: clamp(34px, 5.5vw, 62px); letter-spacing: -.045em; line-height: 1.25; margin: 24px 0; max-width: 800px; position: relative; z-index: 1; }.intro h1 span { color: var(--color-primary); }
+.intro__description { max-width: 560px; color: var(--text-secondary); font-size: 16px; line-height: 1.9; }.intro__link { display: inline-block; margin-top: 24px; font-size: 14px; }
+.intro__mark { position: absolute; right: 24px; top: 30px; font: 170px/1.3 ui-monospace, monospace; color: var(--border-color); letter-spacing: -.15em; }.intro__mark span { color: var(--color-primary); opacity: .3; }
+.home-grid { display: grid; grid-template-columns: minmax(0,1fr) 260px; gap: 64px; }.section-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }.section-heading h2 { font-size: 20px; }.section-heading a { font-size: 12px; }
+.topics h2 { font-size: 18px; margin: 12px 0 24px; }.topics > a { display: flex; align-items: start; gap: 12px; padding: 20px 0; border-top: 1px solid var(--border-color); color: var(--text-primary); font-size: 14px; }.topics small { display: block; margin-top: 6px; color: var(--text-secondary); font-size: 12px; }.topics__number { font: 11px/2 monospace; color: var(--color-primary); }
+.topics__note { padding: 24px; margin-top: 24px; background: var(--bg-white); border: 1px solid var(--border-color); border-radius: 8px; }.topics__note > span { font-size: 28px; color: var(--color-primary); }.topics__note p { color: var(--text-secondary); font-size: 14px; margin: 12px 0; }.topics__note a { font-size: 12px; }
+@media(max-width:900px) { .intro__mark { display: none; }.home-grid { grid-template-columns: 1fr; gap: 48px; }.intro { padding-top: 8px; padding-bottom: 40px; margin-bottom: 32px; } }
 </style>

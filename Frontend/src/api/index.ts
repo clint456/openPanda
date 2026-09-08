@@ -17,7 +17,7 @@ import type { ApiResponse } from '@/types' // 导入统一返回类型
 const http: AxiosInstance = axios.create({
   // baseURL: 所有请求的基础前缀
   // import.meta.env 是 Vite 提供的环境变量访问方式
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   // timeout: 请求超时时间（毫秒）
   timeout: 15000,
   // headers: 默认请求头

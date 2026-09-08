@@ -1,147 +1,26 @@
-/* ============================================================
-   全局样式 — 暖橙主调 + 鼠尾绿 + 灰蓝，高雅舒适
-   字体全黑高对比度，背景暖奶油色
-   ============================================================ */
-
-:root {
-  /* 暖橙主调（琥珀/陶土色，高雅不过亮） */
-  --color-primary: #c8754a;
-  --color-primary-light: #d4946e;
-  --color-primary-dark: #a85d36;
-
-  /* 鼠尾绿（自然优雅） */
-  --color-success: #6b9b6e;
-  --color-success-light: #89b38b;
-
-  /* 金盏黄 */
-  --color-warning: #d4a24e;
-
-  /* 保留红色警告 */
-  --color-danger: #e05555;
-
-  /* 灰蓝（沉稳冷静） */
-  --color-info: #6a8fa8;
-
-  /* 背景与边框 */
-  --bg-page: #faf7f3;
-  --bg-white: #ffffff;
-  --border-color: #e5ded6;
-
-  /* 文字颜色 — 全黑高对比度 */
-  --text-primary: #232323;
-  --text-secondary: #3a3a3a;
-  --text-muted: #555555;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  color: var(--text-primary);
-  background: var(--bg-page);
-  line-height: 1.7;
-}
-
-a { color: var(--color-primary); text-decoration: none; }
-a:hover { color: var(--color-primary-dark); }
-
-/* Element Plus 覆盖 */
-.el-menu--horizontal { border-bottom: none !important; }
-.el-button--primary {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-}
-.el-button--primary:hover {
-  background: var(--color-primary-dark) !important;
-}
-.el-tag--primary {
-  background: #fdf2ea !important;
-  border-color: var(--color-primary-light) !important;
-  color: var(--color-primary-dark) !important;
-}
-.el-pagination .el-pager li.is-active {
-  background: var(--color-primary) !important;
-}
-
-/* 滚动条 */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: #d5cbc0; border-radius: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-
-/* Element Plus 开关/菜单 颜色统一 */
-.el-switch.is-checked .el-switch__core {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-}
-.el-menu-item.is-active {
-  color: var(--color-primary) !important;
-}
-
-/* ============================================================
-   夜间模式
-   标签页 <html data-theme="dark"> 时自动切换
-   ============================================================ */
-[data-theme='dark'] {
-  --color-primary: #e0956e;
-  --color-primary-light: #e8ac8d;
-  --color-primary-dark: #c8754a;
-  --color-success: #7dab7f;
-  --color-warning: #dbb568;
-  --color-danger: #e07070;
-  --color-info: #7a9db3;
-  --bg-page: #1e1e24;
-  --bg-white: #2a2a32;
-  --border-color: #3d3d48;
-  --text-primary: #e8e0d8;
-  --text-secondary: #c5bbb0;
-  --text-muted: #9e9489;
-}
-
-[data-theme='dark'] body {
-  background: var(--bg-page);
-  color: var(--text-primary);
-}
-
-[data-theme='dark'] .el-card {
-  background: var(--bg-white) !important;
-  border-color: var(--border-color) !important;
-}
-
-[data-theme='dark'] .header {
-  background: #24242c;
-  border-bottom-color: #3d3d48;
-}
-
-[data-theme='dark'] .el-menu--horizontal {
-  background: #24242c !important;
-}
-[data-theme='dark'] .el-menu-item {
-  color: var(--text-secondary) !important;
-}
-[data-theme='dark'] .el-menu-item.is-active {
-  color: var(--color-primary) !important;
-}
-[data-theme='dark'] .el-menu-item:hover {
-  background: #33333d !important;
-}
-
-[data-theme='dark'] .el-input__wrapper {
-  background: #33333d !important;
-  box-shadow: 0 0 0 1px var(--border-color) inset !important;
-}
-[data-theme='dark'] .el-input__inner {
-  color: var(--text-primary) !important;
-}
-
-[data-theme='dark'] .el-dialog {
-  background: var(--bg-white) !important;
-}
-[data-theme='dark'] .el-table {
-  --el-table-bg-color: var(--bg-white);
-  --el-table-tr-bg-color: var(--bg-white);
-}
-[data-theme='dark'] .el-table th.el-table__cell {
-  background: #2a2a32;
-}
+@import './themes.css';
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; color: var(--text-primary); background: var(--bg-page); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+a { color: var(--color-primary); text-decoration: none; } a:hover { text-decoration: underline; text-underline-offset: 5px; }
+button, input, select, textarea { font: inherit; } button { cursor: pointer; } button:disabled { cursor: not-allowed; opacity: .6; }
+img { max-width: 100%; } h1, h2, h3 { line-height: 1.3; overflow-wrap: anywhere; } p { overflow-wrap: anywhere; }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+.quiet-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px; border: 0; background: transparent; color: var(--text-secondary); border-radius: 6px; }
+.quiet-button:hover { background: var(--bg-white); color: var(--color-primary); }
+.skip-link { position: fixed; left: 16px; top: -100px; z-index: 1000; padding: 12px 20px; background: var(--bg-white); }.skip-link:focus { top: 12px; }
+.eyebrow { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; font-weight: 650; color: var(--color-primary); }
+.page-heading { font-size: clamp(30px, 5vw, 48px); letter-spacing: -.04em; margin: 12px 0 20px; }
+.muted { color: var(--text-secondary); }
+.state-panel { padding: 40px 24px; border: 1px dashed var(--border-color); border-radius: 8px; text-align: center; color: var(--text-secondary); }
+.action-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 10px 20px; border: 1px solid var(--button-background); background: var(--button-background); color: var(--button-text); border-radius: 6px; }
+.action-button:hover { background: var(--button-hover); }
+.prose { font-size: 18px; line-height: 1.85; overflow-wrap: anywhere; }
+.prose > * + * { margin-top: 1.4em; }.prose h2, .prose h3 { margin-top: 2em; scroll-margin-top: 24px; }.prose h2 { font-size: 28px; }.prose h3 { font-size: 23px; }
+.prose ul, .prose ol { padding-left: 1.5em; }.prose li + li { margin-top: .35em; }
+.prose pre { padding: 24px; background: var(--surface-code); border: 1px solid var(--border-color); border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.65; }
+.prose code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }.prose :not(pre) > code { padding: .15em .3em; background: var(--bg-white); border-radius: 4px; }
+.prose blockquote { padding: 8px 24px; border-left: 3px solid var(--color-primary); color: var(--text-secondary); }
+.prose table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }.prose td, .prose th { padding: 10px 16px; border: 1px solid var(--border-color); }
+.prose img { display: block; height: auto; margin: 24px auto; border-radius: 6px; }.prose a { text-decoration: underline; text-underline-offset: 4px; }
+@media(max-width:640px) { .prose { font-size: 17px; }.prose pre { padding: 16px; } }
+@media(prefers-reduced-motion:reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

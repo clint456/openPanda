@@ -86,6 +86,7 @@
         <div :class="['editor-wrapper', { 'web-fullscreen': isWebFullscreen }]">
           <MdEditor
             v-model="form.content"
+            :theme="appStore.resolvedTheme"
             :language="editorLang"
             :toolbars="toolbars"
             :preview-theme="'github'"
@@ -179,7 +180,7 @@ const submitting = ref<boolean>(false)
 
 /** Markdown 编辑器工具栏配置（移除内置 fullscreen，改用自定义网页全屏） */
 const toolbars: ToolbarNames[] = [
-  'bold', 'italic', 'strikethrough', 'title', '-',
+  'bold', 'italic', 'strikeThrough', 'title', '-',
   'unorderedList', 'orderedList', 'task', '-',
   'code', 'codeRow', 'quote', 'link', 'image', 'table', '-',
   'preview', 'catalog',
@@ -350,15 +351,16 @@ async function handleUploadImage(
 }
 
 .article-form {
-  background: #fff;
+  background: var(--surface-panel);
+  color: var(--text-primary);
   padding: 24px;
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-subtle);
 }
 
 .editor-wrapper {
   width: 100%;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--border-input);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -380,7 +382,7 @@ async function handleUploadImage(
   z-index: 9999;
   border: none;
   border-radius: 0;
-  background: #fff;
+  background: var(--surface-page);
 }
 
 /* 响应式 */

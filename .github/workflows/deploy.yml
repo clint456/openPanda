@@ -27,10 +27,27 @@ on:
   workflow_dispatch:
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+          cache-dependency-path: Backend/go.sum
+      - run: npm --prefix Frontend ci
+      - run: npm --prefix Frontend run check
+      - run: cd Backend && go test -race ./... && go vet ./...
   # ============================================================
   # Job 1: 构建并推送 Docker 镜像
   # ============================================================
   build-and-push:
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
