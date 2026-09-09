@@ -246,6 +246,10 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
   background: var(--newsprint-bg);
 }
 
+:global(.site-main:has(.article-detail)) {
+  background: var(--newsprint-bg);
+}
+
 .loading {
   padding: 40px 0;
 }
