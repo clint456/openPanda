@@ -67,8 +67,17 @@
         <img :src="article.cover_image" :alt="article.title" />
       </div>
 
-      <!-- 文章正文（Markdown → HTML 渲染） -->
-      <div class="article__body prose" v-html="renderedContent" />
+      <div class="article-reading-layout">
+        <aside v-if="toc.length" class="article-toc" :class="{ 'article-toc--open': tocOpen }">
+          <button class="article-toc__toggle" :aria-expanded="tocOpen" @click="tocOpen = !tocOpen">
+            <span>{{ zh ? '文章目录' : 'On this page' }}</span><span aria-hidden="true">{{ tocOpen ? '−' : '+' }}</span>
+          </button>
+          <nav v-show="tocOpen || !isMobile" :aria-label="zh ? '文章目录' : 'Table of contents'">
+            <a v-for="item in toc" :key="item.id" :href="`#${item.id}`" :class="{ 'is-active': activeHeading === item.id, [`toc-level-${item.level}`]: true }" @click="handleTocClick(item.id)">{{ item.text }}</a>
+          </nav>
+        </aside>
+        <div class="article__body prose" v-html="renderedContent" />
+      </div>
 
       <!-- 底部操作 -->
       <div class="article__footer">
@@ -87,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { isAxiosError } from 'axios'
@@ -95,7 +104,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft as ArrowLeftIcon, Edit as EditIcon, Delete as DeleteIcon } from '@element-plus/icons-vue'
 import { getArticleById, deleteArticle, setArticleVisibility } from '@/api/modules/article'
 import { useAuthStore } from '@/stores/auth'
-import { renderMarkdown } from '@/shared/lib/markdown'
+import { renderMarkdownWithToc, type MarkdownHeading } from '@/shared/lib/markdown'
 import { parseArticleId } from '@/utils'
 import type { Article } from '@/types'
 
@@ -105,6 +114,11 @@ const authStore = useAuthStore()
 const { locale } = useI18n()
 const zh = computed(() => locale.value === 'zh-CN')
 const loadError = ref(false)
+const toc = ref<MarkdownHeading[]>([])
+const activeHeading = ref('')
+const tocOpen = ref(false)
+const isMobile = ref(false)
+let observer: IntersectionObserver | null = null
 let requestVersion = 0
 
 // ============================================================
@@ -114,10 +128,28 @@ const article = ref<Article | null>(null)
 const loading = ref<boolean>(true)
 
 /** 将 Markdown 内容转换为 HTML（用于 v-html 渲染） */
-const renderedContent = computed<string>(() => {
-  if (!article.value?.content) return ''
-  return renderMarkdown(article.value.content)
-})
+const readingContent = computed(() => article.value?.content ? renderMarkdownWithToc(article.value.content) : { html: '', headings: [] as MarkdownHeading[] })
+const renderedContent = computed<string>(() => readingContent.value.html)
+watch(() => readingContent.value.headings, value => { toc.value = value }, { immediate: true })
+
+function updateViewport(): void { isMobile.value = window.innerWidth <= 900 }
+function observeHeadings(): void {
+  observer?.disconnect()
+  const elements = toc.value.map(item => document.getElementById(item.id)).filter((element): element is HTMLElement => Boolean(element))
+  if (!elements.length) return
+  observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+    if (visible) activeHeading.value = visible.target.id
+  }, { rootMargin: '-96px 0px -65% 0px', threshold: [0, 1] })
+  elements.forEach(element => observer?.observe(element))
+  activeHeading.value = window.location.hash.slice(1) || activeHeading.value || elements[0].id
+}
+function handleTocClick(id: string): void {
+  tocOpen.value = false
+  activeHeading.value = id
+  history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${id}`)
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 // ============================================================
 // 生命周期
@@ -134,6 +166,10 @@ watch(() => route.params.slug, async () => {
     loading.value = false
   }
 }, { immediate: true })
+watch(renderedContent, async () => { await nextTick(); observeHeadings() })
+window.addEventListener('resize', updateViewport)
+updateViewport()
+onBeforeUnmount(() => { observer?.disconnect(); window.removeEventListener('resize', updateViewport) })
 
 // ============================================================
 // 方法
@@ -259,6 +295,33 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
   width: 100%;
   max-height: 400px;
   object-fit: cover;
+}
+
+.article-reading-layout { position: relative; }
+.article-toc {
+  position: absolute;
+  left: calc(100% + 48px);
+  top: 0;
+  width: 220px;
+  max-height: calc(100vh - 128px);
+  overflow: auto;
+  position: sticky;
+  float: right;
+  transform: translateX(calc(100% + 48px));
+  margin-bottom: -400px;
+}
+.article-toc__toggle { display: flex; justify-content: space-between; width: 100%; padding: 0 0 12px; border: 0; border-bottom: 1px solid var(--border-subtle); background: transparent; color: var(--text-primary); font: 600 14px/1.5 var(--font-heading); text-align: left; }
+.article-toc nav { display: flex; flex-direction: column; padding-top: 8px; }
+.article-toc nav a { padding: 6px 0 6px 12px; border-left: 2px solid transparent; color: var(--text-secondary); font-size: 12px; line-height: 1.55; }
+.article-toc nav a:hover, .article-toc nav a.is-active { border-left-color: var(--link-foreground); color: var(--link-foreground); text-decoration: none; }
+.article-toc .toc-level-3 { padding-left: 24px; font-size: 11px; }
+.article-toc__toggle { cursor: default; }
+@media (min-width: 901px) { .article-toc__toggle span:last-child { display: none; } }
+@media (max-width: 1200px) and (min-width: 901px) { .article-toc { left: auto; transform: translateX(0); right: 0; width: 180px; } .article-detail { max-width: 740px; margin-left: max(24px, calc((100% - 1120px) / 2)); margin-right: 220px; } }
+@media (max-width: 900px) {
+  .article-toc { position: static; width: 100%; max-height: none; margin: 0 0 24px; transform: none; overflow: visible; }
+  .article-toc__toggle { cursor: pointer; padding: 12px 0; }
+  .article-toc nav { max-height: 280px; overflow: auto; border-bottom: 1px solid var(--border-subtle); padding: 8px 0 12px; }
 }
 
 /* 文章正文富文本样式 */

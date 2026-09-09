@@ -34,3 +34,32 @@ const parser = new Marked({
 export function renderMarkdown(source: string): string {
   return parser.parse(source, { async: false })
 }
+
+export interface MarkdownHeading {
+  id: string
+  text: string
+  level: number
+}
+
+function headingSlug(value: string, used: Set<string>): string {
+  const plain = value.replace(/[`*_~[\]()>#]/g, '').trim().toLowerCase()
+  const base = plain.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'section'
+  let id = base
+  let index = 2
+  while (used.has(id)) id = `${base}-${index++}`
+  used.add(id)
+  return id
+}
+
+/** Render Markdown and add deterministic IDs to H1-H3 headings for the reading TOC. */
+export function renderMarkdownWithToc(source: string): { html: string; headings: MarkdownHeading[] } {
+  const headings: MarkdownHeading[] = []
+  const used = new Set<string>()
+  const html = renderMarkdown(source).replace(/<h([1-3])>([\s\S]*?)<\/h\1>/g, (_match, level: string, inner: string) => {
+    const text = inner.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
+    const id = headingSlug(text, used)
+    headings.push({ id, text, level: Number(level) })
+    return `<h${level} id="${id}">${inner}</h${level}>`
+  })
+  return { html, headings }
+}
