@@ -34,6 +34,10 @@ const http: AxiosInstance = axios.create({
 http.interceptors.request.use(
   // 参数 config 的类型是 InternalAxiosRequestConfig
   (config: InternalAxiosRequestConfig) => {
+    // Let the browser set the multipart boundary for FormData requests.
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type']
+    }
     // --- 从 localStorage 获取 JWT Token 并添加到请求头 ---
     const token = localStorage.getItem('token')
     if (token && config.headers) {

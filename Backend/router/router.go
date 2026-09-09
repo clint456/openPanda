@@ -95,6 +95,7 @@ func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingCont
 		admin.GET("/content/export", transferController.Export)
 		admin.POST("/content/import/zip", transferController.ImportZIP)
 		admin.POST("/content/import/markdown", transferController.ImportMarkdown)
+		admin.POST("/content/preview/markdown", transferController.PreviewMarkdown)
 
 		// --- 图片上传 ---
 		admin.POST("/upload/image", uploadController.UploadImage)

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"openpanda-backend/service"
 	"openpanda-backend/utils"
 	"path/filepath"
@@ -24,6 +25,12 @@ func (c *ContentTransferController) Export(ctx *gin.Context) {
 	}
 }
 func (c *ContentTransferController) ImportZIP(ctx *gin.Context) {
+	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, 101<<20)
+	defer func() {
+		if ctx.Request.MultipartForm != nil {
+			_ = ctx.Request.MultipartForm.RemoveAll()
+		}
+	}()
 	f, err := ctx.FormFile("file")
 	if err != nil || strings.ToLower(filepath.Ext(f.Filename)) != ".zip" {
 		utils.BadRequest(ctx, "请选择 ZIP 文件")
@@ -47,6 +54,12 @@ func (c *ContentTransferController) ImportZIP(ctx *gin.Context) {
 	utils.Success(ctx, result)
 }
 func (c *ContentTransferController) ImportMarkdown(ctx *gin.Context) {
+	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, 11<<20)
+	defer func() {
+		if ctx.Request.MultipartForm != nil {
+			_ = ctx.Request.MultipartForm.RemoveAll()
+		}
+	}()
 	f, err := ctx.FormFile("file")
 	if err != nil || strings.ToLower(filepath.Ext(f.Filename)) != ".md" {
 		utils.BadRequest(ctx, "请选择 Markdown 文件")
@@ -58,10 +71,41 @@ func (c *ContentTransferController) ImportMarkdown(ctx *gin.Context) {
 		return
 	}
 	defer r.Close()
-	result, err := c.Service.ImportMarkdown(f.Filename, r)
+	metadata := service.MarkdownMetadata{
+		Title: ctx.PostForm("title"), Slug: ctx.PostForm("slug"), Summary: ctx.PostForm("summary"),
+		Category: ctx.PostForm("category"), Tags: ctx.PostForm("tags"), Language: ctx.PostForm("language"),
+	}
+	result, err := c.Service.ImportMarkdownWithMetadata(f.Filename, r, metadata)
 	if err != nil {
 		utils.BadRequest(ctx, err.Error())
 		return
 	}
 	utils.Success(ctx, result)
+}
+
+func (c *ContentTransferController) PreviewMarkdown(ctx *gin.Context) {
+	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, 11<<20)
+	defer func() {
+		if ctx.Request.MultipartForm != nil {
+			_ = ctx.Request.MultipartForm.RemoveAll()
+		}
+	}()
+	f, err := ctx.FormFile("file")
+	if err != nil || strings.ToLower(filepath.Ext(f.Filename)) != ".md" {
+		utils.BadRequest(ctx, "请选择Markdown文件")
+		return
+	}
+	r, err := f.Open()
+	if err != nil {
+		utils.BadRequest(ctx, "无法读取文件")
+		return
+	}
+	defer r.Close()
+	preview, err := service.PreviewMarkdown(f.Filename, r)
+	if err != nil {
+		utils.BadRequest(ctx, err.Error())
+		return
+	}
+	ctx.Header("Cache-Control", "no-store")
+	utils.Success(ctx, preview)
 }

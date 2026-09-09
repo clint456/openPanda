@@ -77,6 +77,7 @@ type ContentTransferService struct {
 	DB        *gorm.DB
 	UploadDir string
 }
+type MarkdownMetadata struct{ Title, Slug, Summary, Category, Tags, Language string }
 
 func NewContentTransferService(db *gorm.DB, uploadDir string) *ContentTransferService {
 	return &ContentTransferService{DB: db, UploadDir: uploadDir}
@@ -190,6 +191,63 @@ func (s *ContentTransferService) ImportMarkdown(name string, r io.Reader) (Trans
 	}
 	return s.persist(importPackage{Manifest: TransferManifest{Format: "openpanda-export", Version: 1, Articles: []TransferArticle{a}}, Articles: map[string]string{a.File: body}, Resources: map[string][]byte{}}, true)
 }
+func (s *ContentTransferService) ImportMarkdownWithMetadata(name string, r io.Reader, metadata MarkdownMetadata) (TransferResult, error) {
+	data, err := io.ReadAll(io.LimitReader(r, maxTransferSize+1))
+	if err != nil {
+		return TransferResult{}, err
+	}
+	article, body, err := parseMarkdown(name, string(data))
+	if err != nil {
+		return TransferResult{}, err
+	}
+	if metadata.Title != "" {
+		article.Title = metadata.Title
+	}
+	if metadata.Slug != "" {
+		article.Slug = metadata.Slug
+	}
+	if metadata.Summary != "" {
+		article.Summary = metadata.Summary
+	}
+	if metadata.Language != "" {
+		article.Language = metadata.Language
+	}
+	if metadata.Category != "" {
+		var category model.Category
+		if err := s.DB.Where("slug = ?", metadata.Category).First(&category).Error; err != nil {
+			return TransferResult{}, errors.New("所选分类不存在")
+		}
+		article.Category = TransferCategory{Name: category.Name, Slug: category.Slug}
+	}
+	article.Title = strings.TrimSpace(article.Title)
+	if article.Title == "" || len([]rune(article.Title)) > 255 {
+		return TransferResult{}, errors.New("请输入1至255字的标题")
+	}
+	if len([]rune(article.Slug)) > 200 || len([]rune(article.Summary)) > 500 {
+		return TransferResult{}, errors.New("Slug或摘要过长")
+	}
+	if article.Language == "" {
+		article.Language = "zh"
+	}
+	if article.Language != "zh" && article.Language != "en" && article.Language != "both" {
+		return TransferResult{}, errors.New("语言无效")
+	}
+	if metadata.Tags != "" {
+		article.Tags = nil
+		for _, name := range strings.Split(strings.ReplaceAll(metadata.Tags, "，", ","), ",") {
+			name = strings.TrimSpace(name)
+			if name == "" {
+				continue
+			}
+			if len([]rune(name)) > 100 {
+				return TransferResult{}, errors.New("标签过长")
+			}
+			sum := sha256.Sum256([]byte(name))
+			article.Tags = append(article.Tags, TransferTag{Name: name, Slug: "tag-" + hex.EncodeToString(sum[:8])})
+		}
+	}
+	return s.persist(importPackage{Manifest: TransferManifest{Format: "openpanda-export", Version: 1, Articles: []TransferArticle{article}}, Articles: map[string]string{article.File: body}, Resources: map[string][]byte{}}, true)
+}
 func parseZIP(data []byte) (importPackage, error) {
 	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
@@ -237,7 +295,7 @@ func parseZIP(data []byte) (importPackage, error) {
 		return p, errors.New("不支持的导出版本")
 	}
 	for _, a := range p.Manifest.Articles {
-		if p.Articles[a.File] == "" {
+		if _, exists := p.Articles[a.File]; !exists {
 			return p, errors.New("文章文件缺失")
 		}
 	}
@@ -279,6 +337,9 @@ func (s *ContentTransferService) persist(p importPackage, draft bool) (TransferR
 			return result, err
 		}
 		if err = os.WriteFile(dst, p.Resources[r.ArchivePath], 0644); err != nil {
+			for _, file := range created {
+				_ = os.Remove(file)
+			}
 			return result, err
 		}
 		created = append(created, dst)
@@ -288,7 +349,19 @@ func (s *ContentTransferService) persist(p importPackage, draft bool) (TransferR
 		for _, a := range p.Manifest.Articles {
 			var c model.Category
 			if a.Category.Slug != "" {
-				tx.Where("slug = ?", a.Category.Slug).First(&c)
+				if c.ID == 0 {
+					if err := tx.Where("slug = ?", a.Category.Slug).First(&c).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+						return err
+					}
+				}
+			}
+			if c.ID == 0 {
+				if a.Category.Name == "" {
+					a.Category.Name = "导入文档"
+				}
+				if err := tx.Where("name = ?", a.Category.Name).First(&c).Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+					return err
+				}
 			}
 			if c.ID == 0 {
 				c = model.Category{Name: a.Category.Name, Slug: a.Category.Slug, Description: a.Category.Description, SortOrder: a.Category.SortOrder}
@@ -306,7 +379,9 @@ func (s *ContentTransferService) persist(p importPackage, draft bool) (TransferR
 			base := slug
 			for n := 2; ; n++ {
 				var count int64
-				tx.Model(&model.Article{}).Where("slug = ?", slug).Count(&count)
+				if err := tx.Model(&model.Article{}).Where("slug = ?", slug).Count(&count).Error; err != nil {
+					return err
+				}
 				if count == 0 {
 					break
 				}
@@ -319,6 +394,22 @@ func (s *ContentTransferService) persist(p importPackage, draft bool) (TransferR
 			}
 			if article.UpdatedAt.IsZero() {
 				article.UpdatedAt = article.CreatedAt
+			}
+			for _, item := range a.Tags {
+				var tag model.Tag
+				err := tx.Where("name = ? OR slug = ?", item.Name, item.Slug).First(&tag).Error
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					tag = model.Tag{Name: item.Name, Slug: item.Slug}
+					if tag.Slug == "" {
+						sum := sha256.Sum256([]byte(tag.Name))
+						tag.Slug = "tag-" + hex.EncodeToString(sum[:8])
+					}
+					err = tx.Create(&tag).Error
+				}
+				if err != nil {
+					return err
+				}
+				article.Tags = append(article.Tags, tag)
 			}
 			if err := tx.Create(&article).Error; err != nil {
 				return err
@@ -338,30 +429,37 @@ func (s *ContentTransferService) persist(p importPackage, draft bool) (TransferR
 }
 func parseMarkdown(name, text string) (TransferArticle, string, error) {
 	a := TransferArticle{File: "articles/" + safeName(strings.TrimSuffix(filepath.Base(name), filepath.Ext(name)), 0) + ".md", Language: "zh"}
-	body := strings.TrimSpace(text)
+	if len(text) > 10<<20 {
+		return a, "", errors.New("Markdown不能超过10MB")
+	}
+	body := strings.TrimPrefix(strings.ReplaceAll(text, "\r\n", "\n"), "\ufeff")
 	if strings.HasPrefix(body, "---\n") {
 		if end := strings.Index(body[4:], "\n---"); end >= 0 {
 			var m struct {
-				Title, Slug, Summary, Language string           `yaml:"title,slug,summary,language"`
-				Category                       TransferCategory `yaml:"category"`
-				Tags                           []TransferTag    `yaml:"tags"`
+				Title    string           `yaml:"title"`
+				Slug     string           `yaml:"slug"`
+				Summary  string           `yaml:"summary"`
+				Language string           `yaml:"language"`
+				Category TransferCategory `yaml:"category"`
+				Tags     []TransferTag    `yaml:"tags"`
 			}
 			if err := yaml.Unmarshal([]byte(body[4:4+end]), &m); err != nil {
 				return a, "", errors.New("Front Matter 无效")
 			}
 			a.Title, a.Slug, a.Summary, a.Language, a.Category, a.Tags = m.Title, m.Slug, m.Summary, m.Language, m.Category, m.Tags
-			body = strings.TrimSpace(body[4+end+4:])
+			body = strings.TrimPrefix(body[4+end+4:], "\n")
+		} else {
+			return a, "", errors.New("Front Matter 缺少结束分隔线")
 		}
 	}
 	if a.Title == "" {
 		lines := strings.Split(body, "\n")
 		if len(lines) > 0 && strings.HasPrefix(strings.TrimSpace(lines[0]), "# ") {
 			a.Title = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(lines[0]), "# "))
-			body = strings.TrimSpace(strings.Join(lines[1:], "\n"))
 		}
 	}
-	if a.Title == "" {
-		return a, "", errors.New("Markdown 缺少标题")
+	if a.Language == "" {
+		a.Language = "zh"
 	}
 	return a, body, nil
 }
