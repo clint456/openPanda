@@ -40,22 +40,22 @@ test('Markdown headings receive stable unique IDs for the reading table of conte
 
 test('Newsprint light and dark text colors keep readable contrast', () => {
   const css = readFileSync(new URL('../src/styles/newsprint.css', import.meta.url), 'utf8')
-    const declarations = Object.fromEntries([...css.matchAll(/--([\w-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()]))
-    const colors = {
-      'newsprint-ink': declarations['newsprint-ink'],
-      'surface-page': '#f7f6f2',
-    }
-    const resolveColor = (value: string) => value.startsWith('var(--')
-      ? value.slice(6, -1) === 'surface-page' ? colors['surface-page'] : declarations[value.slice(6, -1)]
-      : value
+  const themeBlock = (selector: RegExp) => css.match(selector)![1]
+  const declarations = (block: string) => Object.fromEntries([...block.matchAll(/--([\w-]+):\s*([^;]+);/g)].map(match => [match[1], match[2].trim()]))
+  const resolveColor = (values: Record<string, string>, name: string): string => {
+    const value = values[name]
+    return value.startsWith('var(--') ? resolveColor(values, value.slice(6, -1)) : value
+  }
   const luminance = (hex: string) => {
     const values = hex.slice(1).match(/../g)!.map(value => parseInt(value, 16) / 255).map(value => value <= .03928 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
     return values[0] * .2126 + values[1] * .7152 + values[2] * .0722
   }
-  for (const [theme, foreground, background] of [
-    ['light', '--newsprint-ink', '--newsprint-bg'], ['dark', '--newsprint-ink', '--newsprint-bg'],
+  for (const [theme, selector, page] of [
+    ['light', /:root, :root\[data-theme='light'\] \{([\s\S]*?)\n\}/, '#f7f6f2'],
+    ['dark', /:root\[data-theme='dark'\] \{([\s\S]*?)\n\}/, '#1f1f1f'],
   ] as const) {
-      const ratio = (Math.max(luminance(resolveColor(colors[foreground as keyof typeof colors])), luminance(resolveColor(colors[background as keyof typeof colors]))) + .05) / (Math.min(luminance(resolveColor(colors[foreground as keyof typeof colors])), luminance(resolveColor(colors[background as keyof typeof colors]))) + .05)
+    const values = { ...declarations(themeBlock(selector)), 'surface-page': page }
+    const ratio = (Math.max(luminance(resolveColor(values, 'newsprint-ink')), luminance(resolveColor(values, 'newsprint-bg'))) + .05) / (Math.min(luminance(resolveColor(values, 'newsprint-ink')), luminance(resolveColor(values, 'newsprint-bg'))) + .05)
     assert.ok(ratio >= 4.5, `${theme} Newsprint contrast is ${ratio.toFixed(2)}`)
   }
   assert.match(css, /\.newsprint-theme, \.prose[\s\S]*font-family: var\(--font-reading-title\)/)
