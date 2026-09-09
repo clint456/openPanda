@@ -60,4 +60,7 @@ test('Newsprint light and dark text colors keep readable contrast', () => {
   }
   assert.match(css, /\.newsprint-theme, \.prose[\s\S]*font-family: var\(--font-reading-title\)/)
   assert.match(css, /\.newsprint-theme pre, \.prose pre[\s\S]*background: var\(--newsprint-code-bg\)/)
+
+  const detail = readFileSync(new URL('../src/views/Article/Detail.vue', import.meta.url), 'utf8')
+  assert.match(detail, /\.article-detail\s*\{[^}]*background:\s*var\(--newsprint-bg\)/)
 })

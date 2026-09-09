@@ -243,6 +243,7 @@ async function handleToggleVisibility(value: string | number | boolean): Promise
 .article-detail {
   max-width: 740px;
   margin: 0 auto;
+  background: var(--newsprint-bg);
 }
 
 .loading {
