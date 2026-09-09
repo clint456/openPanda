@@ -89,7 +89,7 @@
             :theme="appStore.resolvedTheme"
             :language="editorLang"
             :toolbars="toolbars"
-            :preview-theme="'github'"
+            preview-theme="newsprint"
             :on-upload-img="handleUploadImage"
             :style="{ height: isWebFullscreen ? 'calc(100vh - 60px)' : '500px' }"
             placeholder="开始撰写你的技术文章...&#10;&#10;支持 Markdown 语法：&#10;- # 标题&#10;- **加粗**&#10;- `代码`&#10;- ```代码块```&#10;- 粘贴或拖入图片自动上传"

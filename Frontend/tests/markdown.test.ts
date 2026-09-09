@@ -36,3 +36,20 @@ test('Markdown headings receive stable unique IDs for the reading table of conte
   ])
   assert.match(result.html, /<h2 id="安装步骤-3">安装步骤<\/h2>/)
 })
+
+test('Newsprint light and dark text colors keep readable contrast', () => {
+  const css = readFileSync(new URL('../src/styles/newsprint.css', import.meta.url), 'utf8')
+  const colors = Object.fromEntries([...css.matchAll(/--newsprint-[\w-]+:\s*(#[\da-f]{6});/gi)].map(match => [match[0].match(/--newsprint-[\w-]+/)![0], match[1]]))
+  const luminance = (hex: string) => {
+    const values = hex.slice(1).match(/../g)!.map(value => parseInt(value, 16) / 255).map(value => value <= .03928 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+    return values[0] * .2126 + values[1] * .7152 + values[2] * .0722
+  }
+  for (const [theme, foreground, background] of [
+    ['light', '--newsprint-ink', '--newsprint-bg'], ['dark', '--newsprint-ink', '--newsprint-bg'],
+  ] as const) {
+    const ratio = (Math.max(luminance(colors[foreground]), luminance(colors[background])) + .05) / (Math.min(luminance(colors[foreground]), luminance(colors[background])) + .05)
+    assert.ok(ratio >= 4.5, `${theme} Newsprint contrast is ${ratio.toFixed(2)}`)
+  }
+  assert.match(css, /\.newsprint-theme, \.prose[\s\S]*font-family: var\(--font-reading-title\)/)
+  assert.match(css, /\.newsprint-theme pre, \.prose pre[\s\S]*background: var\(--newsprint-code-bg\)/)
+})
