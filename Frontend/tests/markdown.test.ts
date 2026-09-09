@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { renderMarkdown, renderMarkdownWithToc, safeUrl } from '../src/shared/lib/markdown.ts'
 
 test('raw HTML, scripts, event handlers and SVG are escaped', () => {
