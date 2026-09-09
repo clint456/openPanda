@@ -1,6 +1,6 @@
 /* Newsprint reading language shared by article pages and the editor preview. */
 :root, :root[data-theme='light'] {
-  --newsprint-bg: #f7f6f2;
+  --newsprint-bg: var(--surface-page);
   --newsprint-ink: #252525;
   --newsprint-muted: #595959;
   --newsprint-rule: #c9c5ba;
@@ -10,7 +10,7 @@
   --newsprint-quote-bg: #efede7;
 }
 :root[data-theme='dark'] {
-  --newsprint-bg: #1f1f1f;
+  --newsprint-bg: var(--surface-page);
   --newsprint-ink: #d8d5ce;
   --newsprint-muted: #aaa69d;
   --newsprint-rule: #56534d;
@@ -29,6 +29,7 @@
   letter-spacing: .018em;
 }
 .newsprint-theme { min-height: 100%; padding: 28px 34px; }
+.article-reading-layout { background: var(--newsprint-bg); }
 .newsprint-theme h1, .newsprint-theme h2, .newsprint-theme h3, .newsprint-theme h4,
 .prose h1, .prose h2, .prose h3, .prose h4 {
   color: var(--newsprint-ink);
