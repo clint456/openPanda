@@ -112,6 +112,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/NotFound/index.vue'),
     meta: { title: '404' },
   },
+  {
+    path: '/admin/content-transfer', name: 'ContentTransfer',
+    component: () => import('@/views/ContentTransfer/index.vue'),
+    meta: { title: '内容导入导出', requiresAuth: true },
+  },
 ]
 
 // 创建路由实例

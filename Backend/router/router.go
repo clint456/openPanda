@@ -50,6 +50,7 @@ func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingCont
 	articleController := controller.NewArticleController(articleService, categoryService)
 	authController := controller.NewAuthController()
 	uploadController := controller.NewUploadController()
+	transferController := controller.NewContentTransferController(service.NewContentTransferService(db, "./uploads"))
 	sitemapController := controller.NewSitemapController(articleService, categoryService)
 
 	// ============================================================
@@ -91,6 +92,9 @@ func SetupRouter(db *gorm.DB, aiController *controller.AIController, settingCont
 		admin.PUT("/articles/:id", articleController.UpdateArticle)
 		admin.DELETE("/articles/:id", articleController.DeleteArticle)
 		admin.PUT("/articles/:id/visibility", articleController.SetArticleVisibility) // 设置文章可见性
+		admin.GET("/content/export", transferController.Export)
+		admin.POST("/content/import/zip", transferController.ImportZIP)
+		admin.POST("/content/import/markdown", transferController.ImportMarkdown)
 
 		// --- 图片上传 ---
 		admin.POST("/upload/image", uploadController.UploadImage)

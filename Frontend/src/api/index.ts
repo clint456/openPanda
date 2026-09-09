@@ -64,6 +64,7 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   // 参数 response 的类型是 AxiosResponse<ApiResponse>
   (response: AxiosResponse<ApiResponse>) => {
+    if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') return response
     const res = response.data // 后端返回的 { code, message, data }
 
     // --- 业务状态码非 200 时视为错误 ---

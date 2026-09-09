@@ -6,6 +6,7 @@
       <router-link to="/articles/new">{{ zh ? '写文章' : 'Write' }}</router-link>
       <router-link to="/admin/categories">{{ zh ? '分类' : 'Categories' }}</router-link>
       <router-link to="/admin/ai">{{ zh ? 'AI 助手' : 'AI assistant' }}</router-link>
+      <router-link to="/admin/content-transfer">{{ zh ? '内容迁移' : 'Transfer' }}</router-link>
     </nav>
     <slot />
   </DefaultLayout>
