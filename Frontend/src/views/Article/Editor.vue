@@ -366,6 +366,12 @@ async function handleUploadImage(
   overflow: hidden;
 }
 
+.editor-wrapper :deep(.md-editor-content),
+.editor-wrapper :deep(.md-editor-preview-wrapper),
+.editor-wrapper :deep(.md-editor-preview) {
+  background: var(--surface-page);
+}
+
 /* 网页全屏切换按钮 */
 .web-fullscreen-toggle {
   margin-bottom: 8px;

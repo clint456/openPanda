@@ -24,5 +24,6 @@ test('Markdown editor form and fullscreen container follow the theme', () => {
   assert.doesNotMatch(css, /#[\da-f]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(/i)
   assert.match(css, /\.article-form\s*\{[^}]*background:\s*var\(--surface-panel\)/)
   assert.match(css, /\.editor-wrapper\.web-fullscreen\s*\{[^}]*background:\s*var\(--surface-page\)/)
+  assert.match(css, /\.editor-wrapper :deep\(\.md-editor-preview\)[\s\S]*background:\s*var\(--surface-page\)/)
   assert.ok(source.includes(':theme="appStore.resolvedTheme"'))
 })
