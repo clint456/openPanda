@@ -360,7 +360,7 @@ async function handleUploadImage(
 
 .editor-wrapper {
   width: 100%;
-  background: var(--newsprint-bg);
+  background: var(--surface-page);
   border: 1px solid var(--border-input);
   border-radius: 4px;
   overflow: hidden;
@@ -383,7 +383,7 @@ async function handleUploadImage(
   z-index: 9999;
   border: none;
   border-radius: 0;
-  background: var(--newsprint-bg);
+  background: var(--surface-page);
 }
 
 /* 响应式 */
